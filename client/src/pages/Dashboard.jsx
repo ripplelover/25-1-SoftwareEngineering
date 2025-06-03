@@ -213,9 +213,10 @@ export default function Dashboard({ user, setUser }) {
             <div style={{ marginBottom: 18 }}>
               <b>강의종합정보</b>
               <ul style={{ listStyle: 'none', padding: 0 }}>
-                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setActiveSection('notice'); setMenuOpen(false); }}>강의 공지사항</li>
-                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setActiveSection('material'); setMenuOpen(false); }}>자료실</li>
-                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setActiveSection('assignment'); setMenuOpen(false); }}>과제</li>
+                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { navigate('/notices'); setMenuOpen(false); }}>강의 공지사항</li>
+                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setMenuOpen(false); }}>자료실</li>
+                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setMenuOpen(false); }}>과제</li>
+                <li style={{ cursor: 'pointer', padding: '4px 0', color: '#b71c1c', fontWeight: 600 }} onClick={() => { navigate('/lecture-plan'); setMenuOpen(false); }}>강의계획서 조회</li>
               </ul>
             </div>
             <div style={{ marginBottom: 18 }}>

@@ -6,6 +6,7 @@ import Consulting from './pages/Consulting';
 import AdminService from './pages/AdminService';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import NoticeDetail from './pages/NoticeDetail';
 
 function AppContent() {
   let initialUser = null;
@@ -26,6 +27,7 @@ function AppContent() {
       <Route path="/grades" element={<Grade />} />
       <Route path="/consulting" element={<Consulting />} />
       <Route path="/admin" element={<AdminService />} />
+      <Route path="/notice/:noticeId" element={<NoticeDetail />} />
       <Route path="*" element={<Dashboard user={user} setUser={setUser} />} />
     </Routes>
   );

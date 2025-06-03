@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import './Dashboard.css';
+import { Link } from 'react-router-dom';
 
 export default function Dashboard({ user, setUser }) {
   const [courses, setCourses] = useState([]);
@@ -351,19 +352,25 @@ export default function Dashboard({ user, setUser }) {
               </table>
             </section>
             <section className="notice-list" style={{ marginTop: 32 }}>
-              <h2 style={{ color: '#b71c1c', fontWeight: 700, marginBottom: 12 }}>과목별 <span style={{ color: '#b71c1c' }}>NOTICE</span></h2>
-              <div style={{ background: '#fff', borderRadius: 8, padding: 16, border: '1px solid #e0e0e0' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <h2 style={{ color: '#2d3e50', fontWeight: 700, marginBottom: 12, fontSize: 24, letterSpacing: 0.5 }}>과목별 NOTICE</h2>
+              <div style={{ background: '#fff', borderRadius: 8, padding: 0, border: '1px solid #e0e0e0', overflow: 'hidden' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 16 }}>
+                  <thead style={{ background: '#f5f5f7' }}>
+                    <tr>
+                      <th style={{ padding: '10px 8px', color: '#666', fontWeight: 600, borderBottom: '1px solid #e0e0e0' }}>날짜</th>
+                      <th style={{ padding: '10px 8px', color: '#666', fontWeight: 600, borderBottom: '1px solid #e0e0e0' }}>구분</th>
+                      <th style={{ padding: '10px 8px', color: '#666', fontWeight: 600, borderBottom: '1px solid #e0e0e0' }}>과목</th>
+                      <th style={{ padding: '10px 8px', color: '#666', fontWeight: 600, borderBottom: '1px solid #e0e0e0' }}>제목</th>
+                    </tr>
+                  </thead>
                   <tbody>
                     {dummyNotices.map((n, idx) => (
-                      <tr key={n.id} style={{ borderBottom: '1px solid #eee' }}>
+                      <tr key={n.id} style={{ borderBottom: '1px solid #f0f0f0', background: idx % 2 === 0 ? '#fafbfc' : '#fff' }}>
                         <td style={{ color: '#888', padding: '8px 8px', whiteSpace: 'nowrap' }}>{n.date}</td>
-                        <td style={{ color: '#b71c1c', fontWeight: 500, padding: '8px 8px', whiteSpace: 'nowrap' }}>{n.type}</td>
-                        <td style={{ color: '#b71c1c', fontWeight: 500, padding: '8px 8px', whiteSpace: 'nowrap' }}>
-                          <span style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setNoticeModal({ open: true, course: n.course })}>{n.course}</span>
-                        </td>
+                        <td style={{ color: '#5e35b1', fontWeight: 500, padding: '8px 8px', whiteSpace: 'nowrap' }}>{n.type}</td>
+                        <td style={{ color: '#1976d2', fontWeight: 500, padding: '8px 8px', whiteSpace: 'nowrap' }}>{n.course}</td>
                         <td style={{ padding: '8px 8px' }}>
-                          <span style={{ cursor: 'pointer', color: '#222', textDecoration: 'underline' }} onClick={() => setNoticeDetail({ idx, notice: n })}>{n.title}</span>
+                          <Link to={`/notice/${n.id}`} style={{ color: '#222', textDecoration: 'underline', fontWeight: 500 }}>{n.title}</Link>
                         </td>
                       </tr>
                     ))}

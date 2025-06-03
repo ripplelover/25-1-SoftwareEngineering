@@ -6,6 +6,7 @@ import authRoutes from './routes/authRoutes';
 import courseRoutes from './routes/courseRoutes';
 import timetableRoutes from './routes/timetableRoutes';
 import assignmentRoutes from './routes/assignmentRoutes';
+import path from 'path';
 
 dotenv.config();
 
@@ -36,6 +37,9 @@ app.use('/api/assignments', assignmentRoutes);
 app.get('/', (req: Request, res: Response) => {
   res.send('Academic Management System API');
 });
+
+// 정적 파일 서빙
+app.use('/uploads', express.static(path.join(__dirname, '../../uploads')));
 
 // 서버 시작
 const PORT = process.env.PORT || 5000;

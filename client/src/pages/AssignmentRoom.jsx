@@ -23,6 +23,9 @@ export default function AssignmentRoom() {
   const [submissionModal, setSubmissionModal] = useState({ open: false, submissions: [], assignmentTitle: '' });
   const [scoreInputs, setScoreInputs] = useState({});
   const [feedbackInputs, setFeedbackInputs] = useState({});
+  const [newContent, setNewContent] = useState('');
+  const [newCourse, setNewCourse] = useState('');
+  const [professorCourses, setProfessorCourses] = useState([]);
   const navigate = useNavigate();
 
   // 과제 목록 조회
@@ -42,12 +45,30 @@ export default function AssignmentRoom() {
     fetchAssignments();
   }, []);
 
+  // 교수 담당 과목 목록 불러오기
+  useEffect(() => {
+    if (user?.role === 'professor') {
+      const fetchCourses = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const res = await axios.get(`http://localhost:5000/api/courses/professor/${user._id}`, {
+            headers: { 'x-auth-token': token }
+          });
+          setProfessorCourses(res.data);
+        } catch (err) {
+          setProfessorCourses([]);
+        }
+      };
+      fetchCourses();
+    }
+  }, [user]);
+
   // 파일 업로드
   const handleFileUpload = async (file) => {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const response = await axios.post('http://localhost:5000/api/upload', formData, {
+      const response = await axios.post('http://localhost:5000/api/assignments/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       return response.data;
@@ -59,22 +80,22 @@ export default function AssignmentRoom() {
 
   // 과제 등록
   const handleAdd = async () => {
-    if (!newTitle || !newDue || !newFile) return;
+    if (!newTitle || !newDue || !newFile || !newCourse || !newContent) return;
     try {
       const token = localStorage.getItem('token');
       const { fileUrl, fileName } = await handleFileUpload(newFile);
-      
       const response = await axios.post('http://localhost:5000/api/assignments', {
         title: newTitle,
-        content: '과제 내용...', // 임시
+        content: newContent,
         dueDate: newDue,
         fileUrl,
-        fileName
+        fileName,
+        course: newCourse
       }, {
         headers: { 'x-auth-token': token }
       });
       setAssignments([response.data, ...assignments]);
-      setNewTitle(''); setNewDue(''); setNewFile(null);
+      setNewTitle(''); setNewDue(''); setNewFile(null); setNewCourse(''); setNewContent('');
     } catch (err) {
       console.error('과제 등록 실패:', err);
       alert('과제 등록에 실패했습니다.');
@@ -208,10 +229,15 @@ export default function AssignmentRoom() {
           </div>
           <div style={{ padding: '32px 40px' }}>
             {user?.role === 'professor' && (
-              <div style={{ marginBottom: 24, display: 'flex', gap: 12 }}>
+              <div style={{ marginBottom: 24, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+                <select value={newCourse} onChange={e => setNewCourse(e.target.value)} style={{ padding: '8px', borderRadius: 4, border: '1px solid #ccc', minWidth: 160 }}>
+                  <option value="">과목 선택</option>
+                  {professorCourses.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+                </select>
                 <input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="과제명 입력" style={{ padding: '8px', borderRadius: 4, border: '1px solid #ccc', minWidth: 200 }} />
                 <input type="date" value={newDue} onChange={e => setNewDue(e.target.value)} style={{ padding: '8px', borderRadius: 4, border: '1px solid #ccc', minWidth: 140 }} />
                 <input type="file" onChange={e => setNewFile(e.target.files[0])} />
+                <input value={newContent} onChange={e => setNewContent(e.target.value)} placeholder="과제 내용 입력" style={{ padding: '8px', borderRadius: 4, border: '1px solid #ccc', minWidth: 220, flex: 1 }} />
                 <button onClick={handleAdd} style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 24px', fontWeight: 600, cursor: 'pointer' }}>등록</button>
               </div>
             )}

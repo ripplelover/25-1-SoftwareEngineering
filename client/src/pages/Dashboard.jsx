@@ -10,6 +10,7 @@ export default function Dashboard({ user, setUser }) {
   const menuBtnRef = useRef(null);
   const [menuPos, setMenuPos] = useState({ top: 60, left: 32 });
   const [activeSection, setActiveSection] = useState('dashboard');
+  const [noticeDetail, setNoticeDetail] = useState(null);
 
   // 더미 데이터 (KLAS 스타일)
   const dummyCourses = [
@@ -106,6 +107,16 @@ export default function Dashboard({ user, setUser }) {
       noticeNew: false
     },
   ];
+
+  // 공지사항 더미 데이터 (과목별)
+  const dummyNotices = [
+    { id: 1, course: '회로이론', date: '2025-06-03', type: '강의 공지사항', title: "주교재에서도 Euler's formula 및 Euler's identity를 혼용해서 설명하고 있으니 참고하시기 바랍니다.", content: '감사합니다.' },
+    { id: 2, course: '회로이론', date: '2025-06-03', type: '강의 공지사항', title: "Euler's formula 및 Euler's identity 관련 링크", content: '' },
+    { id: 3, course: '회로이론', date: '2025-06-03', type: '강의 공지사항', title: "수업시간에 공지해드린대로 휴강에 대한 녹화동영상들 및 관련 응용 문제들도 기말고사 범위에 포함됩니다.", content: '' },
+    { id: 4, course: '소프트웨어공학', date: '2025-06-01', type: '강의 자료실', title: '11-2 Reliability', content: '' },
+    { id: 5, course: '회로이론', date: '2025-05-29', type: '강의 공지사항', title: '6.12.(목) 휴강 및 이에 대한 보강으로 6.13.(금) 18:00~19:15 기말고사 대면실시 예정입니다.', content: '' },
+  ];
+  const [noticeModal, setNoticeModal] = useState({ open: false, course: null });
 
   useEffect(() => {
     if (!user || !user.id) return;
@@ -259,7 +270,8 @@ export default function Dashboard({ user, setUser }) {
                       <div style={{ color: '#666', fontSize: 15 }}>{course.professor} / {course.times}</div>
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
-                      <button style={{ background: '#a5d6a7', color: '#222', border: 'none', borderRadius: 4, padding: '6px 16px', fontWeight: 500, cursor: 'pointer' }}>
+                      <button style={{ background: '#a5d6a7', color: '#222', border: 'none', borderRadius: 4, padding: '6px 16px', fontWeight: 500, cursor: 'pointer' }}
+                        onClick={() => setNoticeModal({ open: true, course: course.name })}>
                         공지사항{course.noticeNew && <span style={{ color: 'red', fontWeight: 700, marginLeft: 4 }}>N</span>}
                       </button>
                       <button style={{ background: '#b0bec5', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 16px', fontWeight: 500, cursor: 'pointer' }}>강의자료실</button>
@@ -270,6 +282,35 @@ export default function Dashboard({ user, setUser }) {
                 ))}
               </div>
             </section>
+            {noticeModal.open && (
+              <div style={{ position: 'fixed', left: 0, top: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.3)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setNoticeModal({ open: false, course: null })}>
+                <div style={{ background: '#fff', borderRadius: 8, minWidth: 480, maxWidth: '90vw', padding: 32, boxShadow: '0 2px 16px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
+                  <h2 style={{ marginBottom: 16 }}>[{noticeModal.course}] 공지사항</h2>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 16 }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid #e0e0e0' }}>
+                        <th style={{ textAlign: 'left', padding: '8px 12px' }}>날짜</th>
+                        <th style={{ textAlign: 'left', padding: '8px 12px' }}>구분</th>
+                        <th style={{ textAlign: 'left', padding: '8px 12px' }}>제목</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dummyNotices.filter(n => n.course === noticeModal.course).map(n => (
+                        <tr key={n.id} style={{ borderBottom: '1px solid #eee' }}>
+                          <td style={{ padding: '8px 12px', color: '#888' }}>{n.date}</td>
+                          <td style={{ padding: '8px 12px', color: '#b39ddb' }}>{n.type}</td>
+                          <td style={{ padding: '8px 12px' }}>{n.title}</td>
+                        </tr>
+                      ))}
+                      {dummyNotices.filter(n => n.course === noticeModal.course).length === 0 && (
+                        <tr><td colSpan={3} style={{ textAlign: 'center', color: '#aaa', padding: 24 }}>공지사항이 없습니다.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                  <button onClick={() => setNoticeModal({ open: false, course: null })} style={{ marginTop: 8 }}>닫기</button>
+                </div>
+              </div>
+            )}
             <section className="timetable">
               <h2>시간표</h2>
               <table>
@@ -309,6 +350,56 @@ export default function Dashboard({ user, setUser }) {
                 </tbody>
               </table>
             </section>
+            <section className="notice-list" style={{ marginTop: 32 }}>
+              <h2 style={{ color: '#b71c1c', fontWeight: 700, marginBottom: 12 }}>과목별 <span style={{ color: '#b71c1c' }}>NOTICE</span></h2>
+              <div style={{ background: '#fff', borderRadius: 8, padding: 16, border: '1px solid #e0e0e0' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <tbody>
+                    {dummyNotices.map((n, idx) => (
+                      <tr key={n.id} style={{ borderBottom: '1px solid #eee' }}>
+                        <td style={{ color: '#888', padding: '8px 8px', whiteSpace: 'nowrap' }}>{n.date}</td>
+                        <td style={{ color: '#b71c1c', fontWeight: 500, padding: '8px 8px', whiteSpace: 'nowrap' }}>{n.type}</td>
+                        <td style={{ color: '#b71c1c', fontWeight: 500, padding: '8px 8px', whiteSpace: 'nowrap' }}>
+                          <span style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setNoticeModal({ open: true, course: n.course })}>{n.course}</span>
+                        </td>
+                        <td style={{ padding: '8px 8px' }}>
+                          <span style={{ cursor: 'pointer', color: '#222', textDecoration: 'underline' }} onClick={() => setNoticeDetail({ idx, notice: n })}>{n.title}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+            {noticeDetail && (
+              <div style={{ position: 'fixed', left: 0, top: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.3)', zIndex: 4000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setNoticeDetail(null)}>
+                <div style={{ background: '#fff', borderRadius: 8, minWidth: 600, maxWidth: '95vw', padding: 32, boxShadow: '0 2px 16px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
+                  <h2 style={{ fontWeight: 700, fontSize: 22, marginBottom: 18 }}>강의 공지사항</h2>
+                  <div style={{ borderTop: '2px solid #bdbdbd', borderBottom: '1px solid #eee', padding: '18px 0', marginBottom: 18 }}>
+                    <div style={{ fontWeight: 600, fontSize: 18, marginBottom: 8 }}>{noticeDetail.notice.title}</div>
+                    <div style={{ color: '#888', fontSize: 15, marginBottom: 4 }}>
+                      작성자 : <b>황호영</b> &nbsp; 등록일 : {noticeDetail.notice.date} &nbsp; 조회수 : 6
+                    </div>
+                  </div>
+                  <div style={{ minHeight: 60, fontSize: 16, color: '#222', marginBottom: 32 }}>
+                    {noticeDetail.notice.title}
+                    <br />
+                    {noticeDetail.notice.content}
+                  </div>
+                  <div style={{ borderTop: '1px solid #eee', padding: '12px 0', fontSize: 15, color: '#444', display: 'flex', justifyContent: 'space-between' }}>
+                    <span>
+                      <b>이전 글</b> : {dummyNotices[noticeDetail.idx - 1] ? dummyNotices[noticeDetail.idx - 1].title : '이전글이 없습니다.'}
+                    </span>
+                    <span>
+                      <b>다음 글</b> : {dummyNotices[noticeDetail.idx + 1] ? dummyNotices[noticeDetail.idx + 1].title : '다음글이 없습니다.'}
+                    </span>
+                  </div>
+                  <div style={{ textAlign: 'right', marginTop: 18 }}>
+                    <button onClick={() => setNoticeDetail(null)} style={{ background: '#bdbdbd', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 24px', fontWeight: 500, cursor: 'pointer' }}>목록</button>
+                  </div>
+                </div>
+              </div>
+            )}
             <section className="notices-assignments">
               <div>
                 <h2>과목별 공지사항</h2>

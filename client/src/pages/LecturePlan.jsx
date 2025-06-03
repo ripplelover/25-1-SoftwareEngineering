@@ -63,7 +63,7 @@ export default function LecturePlan() {
               <ul style={{ listStyle: 'none', padding: 0 }}>
                 <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { window.location.href = '/dashboard'; setMenuOpen(false); }}>수강관리/시간표</li>
                 <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setMenuOpen(false); }}>성적/이수현황</li>
-                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setMenuOpen(false); }}>수강신청</li>
+                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { window.location.href = '/enroll'; setMenuOpen(false); }}>수강신청</li>
               </ul>
             </div>
             <div style={{ marginBottom: 18 }}>
@@ -72,7 +72,7 @@ export default function LecturePlan() {
                 <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { window.location.href = '/notices'; setMenuOpen(false); }}>강의 공지사항</li>
                 <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setMenuOpen(false); }}>자료실</li>
                 <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setMenuOpen(false); }}>과제</li>
-                <li style={{ cursor: 'pointer', padding: '4px 0', color: '#b71c1c', fontWeight: 600 }} onClick={() => { window.location.href = '/lecture-plan'; setMenuOpen(false); }}>강의계획서 조회</li>
+                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { window.location.href = '/lecture-plan'; setMenuOpen(false); }}>강의계획서 조회</li>
               </ul>
             </div>
             <div style={{ marginBottom: 18 }}>

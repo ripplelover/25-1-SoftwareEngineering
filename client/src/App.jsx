@@ -9,6 +9,7 @@ import Register from './pages/Register';
 import NoticeDetail from './pages/NoticeDetail';
 import NoticeList from './pages/NoticeList';
 import LecturePlan from './pages/LecturePlan';
+import Enroll from './pages/Enroll';
 
 function AppContent() {
   let initialUser = null;
@@ -32,6 +33,7 @@ function AppContent() {
       <Route path="/notice/:noticeId" element={<NoticeDetail />} />
       <Route path="/notices" element={<NoticeList />} />
       <Route path="/lecture-plan" element={<LecturePlan />} />
+      <Route path="/enroll" element={<Enroll />} />
       <Route path="*" element={<Dashboard user={user} setUser={setUser} />} />
     </Routes>
   );

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import './Dashboard.css';
 import { Link, useNavigate } from 'react-router-dom';
 import SideMenu from '../components/SideMenu';
+import axios from 'axios';
 
 export default function Dashboard({ user, setUser }) {
   const [courses, setCourses] = useState([]);
@@ -59,35 +60,20 @@ export default function Dashboard({ user, setUser }) {
   };
 
   useEffect(() => {
-    // API 호출 부분 주석 처리
-    /*
     if (!user || !user._id) return;
-    
-    // Fetch courses
-    fetch(`http://localhost:5000/api/courses/${user._id}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data && Array.isArray(data)) {
-          setCourses(data);
-        }
-      })
-      .catch(err => console.error('Error fetching courses:', err));
-
-    // Fetch timetable
-    fetch(`http://localhost:5000/api/timetable/${user._id}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data && Array.isArray(data.entries)) {
-          setTimetable(data.entries);
-        }
-      })
-      .catch(err => console.error('Error fetching timetable:', err));
-    */
-
-    // 더미 데이터 사용
-    setCourses(dummyCourses);
-    setTimetable(dummyTimetable);
-    setNotices(dummyNotices);
+    // 실제 수강신청한 과목 목록 불러오기
+    const fetchCourses = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get(`http://localhost:5000/api/courses/student/${user._id}`, {
+          headers: { 'x-auth-token': token }
+        });
+        setCourses(res.data);
+      } catch (err) {
+        setCourses([]);
+      }
+    };
+    fetchCourses();
   }, [user]);
 
   useEffect(() => {
@@ -129,25 +115,28 @@ export default function Dashboard({ user, setUser }) {
   const timetableMatrix = Array.from({ length: periods.length }, () => Array(days.length).fill(null));
   const timetableDisplayMatrix = Array.from({ length: periods.length }, () => Array(days.length).fill(null));
   
-  timetable.forEach(entry => {
-    const dayIdx = days.indexOf(entry.day);
-    if (dayIdx !== -1 && entry.time) {
-      const match = entry.time.match(/(\d+)-(\d+)교시/);
-      let start = entry.period;
-      let end = entry.period;
+  // 실제 과목 시간표 채우기
+  courses.forEach(course => {
+    if (!course.time) return;
+    course.time.split(',').forEach(slot => {
+      const match = slot.trim().match(/([월화수목금])\s*(\d{1,2})(?:-(\d{1,2}))?교시\/([^,]+)/);
       if (match) {
-        start = parseInt(match[1], 10);
-        end = parseInt(match[2], 10);
-      } else if (typeof entry.period === 'number') {
-        start = end = entry.period;
-      }
-      for (let p = start; p <= end; p++) {
-        if (p >= 1 && p <= periods.length) {
-          timetableMatrix[p - 1][dayIdx] = entry;
-          timetableDisplayMatrix[p - 1][dayIdx] = (p === start);
+        const dayIdx = days.indexOf(match[1]);
+        const start = parseInt(match[2], 10);
+        const end = match[3] ? parseInt(match[3], 10) : start;
+        for (let p = start; p <= end; p++) {
+          if (dayIdx !== -1 && p >= 1 && p <= periods.length) {
+            timetableMatrix[p-1][dayIdx] = {
+              name: course.name,
+              professor: course.professor,
+              room: match[4],
+              time: `${match[2]}${match[3] ? '-' + match[3] : ''}교시`
+            };
+            timetableDisplayMatrix[p-1][dayIdx] = (p === start);
+          }
         }
       }
-    }
+    });
   });
 
   if (user?.role === 'professor') {
@@ -257,20 +246,20 @@ export default function Dashboard({ user, setUser }) {
             <section className="course-list">
               <h2>수강과목 <span style={{ fontWeight: 400, fontSize: 18, color: '#888' }}>(2025학년도 1학기)</span></h2>
               <div style={{ background: '#fff', borderRadius: 8, padding: 16, border: '1px solid #e0e0e0' }}>
-                {dummyCourseList.map(course => (
+                {courses.map(course => (
                   <div key={course._id} style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid #eee', padding: '12px 0' }}>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 600, fontSize: 18 }}>{course.name} <span style={{ color: '#888', fontWeight: 400 }}>({course.code})</span></div>
-                      <div style={{ color: '#666', fontSize: 15 }}>{course.professor} / {course.times}</div>
+                      <div style={{ fontWeight: 600, fontSize: 18 }}>{course.name}</div>
+                      <div style={{ color: '#666', fontSize: 15 }}>{course.professor} / {course.time}</div>
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
                       <button style={{ background: '#a5d6a7', color: '#222', border: 'none', borderRadius: 4, padding: '6px 16px', fontWeight: 500, cursor: 'pointer' }}
                         onClick={() => {
-                          const firstNotice = dummyNotices.find(n => n.course === course.name);
-                          if (firstNotice) navigate(`/notice/${firstNotice.id}`);
-                          else alert('공지사항이 없습니다.');
+                          // 공지사항 페이지로 이동 또는 모달 오픈 등
+                          // 실제 공지사항 연동 시 course._id 사용
+                          alert('공지사항 기능은 추후 연동 예정');
                         }}>
-                        공지사항{course.noticeNew && <span style={{ color: 'red', fontWeight: 700, marginLeft: 4 }}>N</span>}
+                        공지사항
                       </button>
                       <button style={{ background: '#b0bec5', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 16px', fontWeight: 500, cursor: 'pointer' }}>강의자료실</button>
                       <button style={{ background: '#bcaaa4', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 16px', fontWeight: 500, cursor: 'pointer' }}>강의Q&A</button>
@@ -278,6 +267,7 @@ export default function Dashboard({ user, setUser }) {
                     </div>
                   </div>
                 ))}
+                {courses.length === 0 && <div style={{ color: '#aaa', textAlign: 'center', padding: 32 }}>수강과목이 없습니다.</div>}
               </div>
             </section>
             {noticeModal.open && (
@@ -361,7 +351,7 @@ export default function Dashboard({ user, setUser }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {dummyNotices.map((n, idx) => (
+                    {dummyNotices.filter(n => courses.some(c => c.name === n.course)).map((n, idx) => (
                       <tr key={n.id} style={{ borderBottom: '1px solid #f0f0f0', background: idx % 2 === 0 ? '#fafbfc' : '#fff' }}>
                         <td style={{ color: '#888', padding: '8px 8px', whiteSpace: 'nowrap' }}>{n.date}</td>
                         <td style={{ color: '#5e35b1', fontWeight: 500, padding: '8px 8px', whiteSpace: 'nowrap' }}>{n.type}</td>
@@ -371,6 +361,9 @@ export default function Dashboard({ user, setUser }) {
                         </td>
                       </tr>
                     ))}
+                    {courses.length === 0 && (
+                      <tr><td colSpan={4} style={{ textAlign: 'center', color: '#aaa', padding: 32 }}>공지사항이 없습니다.</td></tr>
+                    )}
                   </tbody>
                 </table>
               </div>

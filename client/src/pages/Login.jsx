@@ -11,20 +11,30 @@ export default function Login({ setUser }) {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!studentId || !password) {
       setError('아이디와 비밀번호를 입력하세요.');
       return;
     }
     setError('');
-    const user = {
-      studentId,
-      password
-    };
-    localStorage.setItem('user', JSON.stringify(user));
-    setUser(user);
-    navigate('/dashboard');
+    try {
+      const res = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId, password })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.message || '로그인 실패');
+        return;
+      }
+      setUser(data.user);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      navigate('/dashboard');
+    } catch (err) {
+      setError('서버 오류');
+    }
   };
 
   return (

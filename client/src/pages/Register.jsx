@@ -17,25 +17,38 @@ export default function Register({ setUser }) {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
       setError('비밀번호가 일치하지 않습니다.');
       return;
     }
     setError('');
-    const user = {
-      name,
-      studentId,
-      password,
-      email,
-      department,
-      role,
-      ...(role === 'student' ? { major, grade } : {})
-    };
-    localStorage.setItem('user', JSON.stringify(user));
-    setUser(user);
-    navigate('/dashboard');
+    try {
+      const res = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          studentId,
+          password,
+          email,
+          department,
+          role,
+          ...(role === 'student' ? { major, grade } : {})
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.message || '회원가입 실패');
+        return;
+      }
+      setUser(data.user);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      navigate('/dashboard');
+    } catch (err) {
+      setError('서버 오류');
+    }
   };
 
   return (

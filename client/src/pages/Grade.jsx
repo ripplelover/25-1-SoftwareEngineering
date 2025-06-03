@@ -1,19 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import '../pages/Dashboard.css';
 import SideMenu from '../components/SideMenu';
 
-export default function Grade() {
+export default function Grade({ user, setUser }) {
   const [grades, setGrades] = useState([]);
   const [year, setYear] = useState(2025);
   const [semester, setSemester] = useState('1학기');
   const [menuOpen, setMenuOpen] = useState(false);
   const menuBtnRef = useRef(null);
   const [menuPos, setMenuPos] = useState({ top: 60, left: 32 });
-  const navigate = useNavigate();
-
-  // Get user from localStorage
-  const user = JSON.parse(localStorage.getItem('user'));
 
   // 더미 데이터
   const dummyGrades = [

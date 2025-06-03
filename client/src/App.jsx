@@ -27,7 +27,7 @@ function AppContent() {
       <Route path="/login" element={<Login setUser={setUser} />} />
       <Route path="/register" element={<Register setUser={setUser} />} />
       <Route path="/dashboard" element={<Dashboard user={user} setUser={setUser} />} />
-      <Route path="/grades" element={<Grade />} />
+      <Route path="/grades" element={<Grade user={user} setUser={setUser} />} />
       <Route path="/consulting" element={<Consulting />} />
       <Route path="/admin" element={<AdminService />} />
       <Route path="/notice/:noticeId" element={<NoticeDetail />} />

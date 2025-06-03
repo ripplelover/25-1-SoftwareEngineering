@@ -21,6 +21,7 @@ import NoticeListProfessor from './pages/professor/NoticeList';
 import NoticeWrite from './pages/professor/NoticeWrite';
 import NoticeEdit from './pages/professor/NoticeEdit';
 import NoticeDelete from './pages/professor/NoticeDelete';
+import LecturePlanProfessor from './pages/professor/LecturePlanProfessor';
 
 function AppContent() {
   let initialUser = null;
@@ -57,6 +58,7 @@ function AppContent() {
       <Route path="/professor/notice/write" element={<NoticeWrite />} />
       <Route path="/professor/notice/edit/:id" element={<NoticeEdit />} />
       <Route path="/professor/notice/delete/:id" element={<NoticeDelete />} />
+      <Route path="/professor/lecture-plan" element={<LecturePlanProfessor />} />
       <Route path="*" element={<Dashboard user={user} setUser={setUser} />} />
     </Routes>
   );

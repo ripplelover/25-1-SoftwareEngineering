@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SideMenu from '../components/SideMenu';
 import '../pages/Dashboard.css';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 export default function AssignmentRoom() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -11,10 +12,7 @@ export default function AssignmentRoom() {
     const userStr = localStorage.getItem('user');
     user = userStr && userStr !== 'undefined' ? JSON.parse(userStr) : null;
   } catch (e) { user = null; }
-  const [assignments, setAssignments] = useState([
-    { id: 1, title: '과제1: 프로젝트 계획서', due: '2024-06-10', file: null, fileName: 'plan.pdf', submissions: [{ student: '홍길동', file: null, fileName: 'plan.pdf' }] },
-    { id: 2, title: '과제2: 코드 제출', due: '2024-06-20', file: null, fileName: 'code.zip', submissions: [] }
-  ]);
+  const [assignments, setAssignments] = useState([]);
   const [newTitle, setNewTitle] = useState('');
   const [newDue, setNewDue] = useState('');
   const [newFile, setNewFile] = useState(null);
@@ -24,42 +22,123 @@ export default function AssignmentRoom() {
   const [submitBlob, setSubmitBlob] = useState(null);
   const navigate = useNavigate();
 
-  // 등록
-  const handleAdd = () => {
+  // 과제 목록 조회
+  useEffect(() => {
+    const fetchAssignments = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:5000/api/assignments', {
+          headers: { 'x-auth-token': token }
+        });
+        setAssignments(response.data);
+      } catch (err) {
+        console.error('과제 목록 조회 실패:', err);
+        alert('과제 목록을 불러오는데 실패했습니다.');
+      }
+    };
+    fetchAssignments();
+  }, []);
+
+  // 파일 업로드
+  const handleFileUpload = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await axios.post('http://localhost:5000/api/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return response.data;
+    } catch (err) {
+      console.error('파일 업로드 실패:', err);
+      throw err;
+    }
+  };
+
+  // 과제 등록
+  const handleAdd = async () => {
     if (!newTitle || !newDue || !newFile) return;
-    setAssignments([...assignments, { id: Date.now(), title: newTitle, due: newDue, submissions: [], file: newFile, fileName: newFile.name }]);
-    setNewTitle(''); setNewDue(''); setNewFile(null);
+    try {
+      const token = localStorage.getItem('token');
+      const { fileUrl, fileName } = await handleFileUpload(newFile);
+      
+      const response = await axios.post('http://localhost:5000/api/assignments', {
+        title: newTitle,
+        content: '과제 내용...', // 임시
+        dueDate: newDue,
+        fileUrl,
+        fileName
+      }, {
+        headers: { 'x-auth-token': token }
+      });
+      setAssignments([response.data, ...assignments]);
+      setNewTitle(''); setNewDue(''); setNewFile(null);
+    } catch (err) {
+      console.error('과제 등록 실패:', err);
+      alert('과제 등록에 실패했습니다.');
+    }
   };
-  // 삭제
-  const handleDelete = (id) => {
-    setAssignments(assignments.filter(a => a.id !== id));
+
+  // 과제 삭제
+  const handleDelete = async (id) => {
+    if (!window.confirm('정말 삭제하시겠습니까?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`http://localhost:5000/api/assignments/${id}`, {
+        headers: { 'x-auth-token': token }
+      });
+      setAssignments(assignments.filter(a => a._id !== id));
+    } catch (err) {
+      console.error('과제 삭제 실패:', err);
+      alert('과제 삭제에 실패했습니다.');
+    }
   };
-  // 수정
+
+  // 과제 수정
   const handleEdit = (id) => {
-    const a = assignments.find(a => a.id === id);
+    const a = assignments.find(a => a._id === id);
     setEditId(id);
     setEditTitle(a.title);
-    setEditDue(a.due);
+    setEditDue(a.dueDate);
   };
-  const handleEditSave = (id) => {
-    setAssignments(assignments.map(a => a.id === id ? { ...a, title: editTitle, due: editDue } : a));
-    setEditId(null); setEditTitle(''); setEditDue('');
+
+  const handleEditSave = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.put(`http://localhost:5000/api/assignments/${id}`, {
+        title: editTitle,
+        dueDate: editDue
+      }, {
+        headers: { 'x-auth-token': token }
+      });
+      setAssignments(assignments.map(a => a._id === id ? response.data : a));
+      setEditId(null); setEditTitle(''); setEditDue('');
+    } catch (err) {
+      console.error('과제 수정 실패:', err);
+      alert('과제 수정에 실패했습니다.');
+    }
   };
-  // 파일 다운로드 (더미 Blob)
-  const handleDownload = (file, fileName) => {
-    const url = URL.createObjectURL(file);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-  // 학생 제출
-  const handleSubmit = (id) => {
+
+  // 학생 과제 제출
+  const handleSubmit = async (id) => {
     if (!submitBlob) return;
-    setAssignments(assignments.map(a => a.id === id ? { ...a, submissions: [...a.submissions, { student: user.name, file: submitBlob, fileName: submitBlob.name }] } : a));
-    setSubmitBlob(null);
-    alert('제출 완료! (실제 파일 업로드는 더미)');
+    try {
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('file', submitBlob);
+
+      const response = await axios.post(`http://localhost:5000/api/assignments/${id}/submit`, formData, {
+        headers: { 
+          'x-auth-token': token,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      setAssignments(assignments.map(a => a._id === id ? response.data : a));
+      setSubmitBlob(null);
+      alert('제출이 완료되었습니다.');
+    } catch (err) {
+      console.error('과제 제출 실패:', err);
+      alert('과제 제출에 실패했습니다.');
+    }
   };
 
   return (
@@ -111,19 +190,22 @@ export default function AssignmentRoom() {
               </thead>
               <tbody>
                 {assignments.map((a, idx) => (
-                  <tr key={a.id}>
+                  <tr key={a._id}>
                     <td style={{ padding: '12px 8px' }}>{assignments.length - idx}</td>
-                    <td style={{ padding: '12px 8px', color: '#1976d2', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => navigate(`/assignments/${a.id}`)}>{a.title}</td>
-                    <td style={{ padding: '12px 8px' }}>{a.due}</td>
+                    <td style={{ padding: '12px 8px', color: '#1976d2', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => navigate(`/assignments/${a._id}`)}>{a.title}</td>
+                    <td style={{ padding: '12px 8px' }}>{new Date(a.dueDate).toLocaleDateString()}</td>
                     <td style={{ padding: '12px 8px' }}>{a.fileName ? a.fileName : '파일 없음'}</td>
                     {user?.role === 'professor' && (
                       <td style={{ padding: '12px 8px' }}>
-                        <button style={{ marginRight: 8 }}>수정</button>
-                        <button style={{ color: 'red' }}>삭제</button>
+                        <button onClick={() => handleEdit(a._id)} style={{ marginRight: 8 }}>수정</button>
+                        <button onClick={() => handleDelete(a._id)} style={{ color: 'red' }}>삭제</button>
+                        <button onClick={() => navigate(`/assignments/${a._id}`)} style={{ marginLeft: 8, background: '#1976d2', color: '#fff', border: 'none', borderRadius: 4, padding: '4px 8px', cursor: 'pointer' }}>제출 현황 보기</button>
                       </td>
                     )}
                     {user?.role === 'student' && (
-                      <td style={{ padding: '12px 8px' }}>{a.submissions.some(s => s.student === user.name) ? '제출완료' : '미제출'}</td>
+                      <td style={{ padding: '12px 8px' }}>
+                        {a.submissions.some(s => s.student._id === user._id) ? '제출완료' : '미제출'}
+                      </td>
                     )}
                   </tr>
                 ))}

@@ -62,7 +62,7 @@ export default function LecturePlan() {
               <b>대학생활</b>
               <ul style={{ listStyle: 'none', padding: 0 }}>
                 <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { window.location.href = '/dashboard'; setMenuOpen(false); }}>수강관리/시간표</li>
-                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setMenuOpen(false); }}>성적/이수현황</li>
+                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { window.location.href = '/grades'; setMenuOpen(false); }}>성적/이수현황</li>
                 <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { window.location.href = '/enroll'; setMenuOpen(false); }}>수강신청</li>
               </ul>
             </div>
@@ -70,9 +70,10 @@ export default function LecturePlan() {
               <b>강의종합정보</b>
               <ul style={{ listStyle: 'none', padding: 0 }}>
                 <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { window.location.href = '/notices'; setMenuOpen(false); }}>강의 공지사항</li>
-                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setMenuOpen(false); }}>자료실</li>
-                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setMenuOpen(false); }}>과제</li>
+                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { window.location.href = '/materials'; setMenuOpen(false); }}>자료실</li>
+                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { window.location.href = '/assignments'; setMenuOpen(false); }}>과제</li>
                 <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { window.location.href = '/lecture-plan'; setMenuOpen(false); }}>강의계획서 조회</li>
+                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { window.location.href = '/student-materials'; setMenuOpen(false); }}>수강생 자료실</li>
               </ul>
             </div>
             <div style={{ marginBottom: 18 }}>

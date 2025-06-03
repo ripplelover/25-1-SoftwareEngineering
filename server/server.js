@@ -31,6 +31,7 @@ const upload = multer({ storage: storage });
 // 라우트
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/assignments', require('./routes/assignments'));
+app.use('/api/notices', require('./routes/notices'));
 
 // 파일 업로드 라우트
 app.post('/api/upload', upload.single('file'), (req, res) => {

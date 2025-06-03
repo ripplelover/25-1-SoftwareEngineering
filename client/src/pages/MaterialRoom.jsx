@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SideMenu from '../components/SideMenu';
 import '../pages/Dashboard.css';
 import { useNavigate } from 'react-router-dom';
@@ -21,6 +21,14 @@ export default function MaterialRoom() {
   const [editTitle, setEditTitle] = useState('');
   const [newFile, setNewFile] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user || !user._id) return;
+    fetch(`http://localhost:5000/api/materials/${user._id}`)
+      .then(res => res.json())
+      .then(setMaterials)
+      .catch(err => console.error('Error fetching materials:', err));
+  }, [user]);
 
   // 등록
   const handleAdd = () => {

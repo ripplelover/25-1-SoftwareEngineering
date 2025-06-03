@@ -1,14 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SideMenu from '../../components/SideMenu';
-
-const dummyNotices = [
-  { id: 1, title: '중간고사 일정 안내', date: '2024-03-15', views: 12, hasFile: true },
-  { id: 2, title: '과제 1 제출 안내', date: '2024-03-14', views: 8, hasFile: false },
-  { id: 3, title: '강의 자료 업로드 안내', date: '2024-03-13', views: 15, hasFile: true },
-  { id: 4, title: '기말고사 일정 안내', date: '2024-03-12', views: 10, hasFile: false },
-  { id: 5, title: '강의 평가 안내', date: '2024-03-11', views: 7, hasFile: true }
-];
+import axios from 'axios';
 
 export default function NoticeList() {
   const navigate = useNavigate();
@@ -16,21 +9,48 @@ export default function NoticeList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuPos, setMenuPos] = useState({ top: 60, left: 32 });
-  const noticesPerPage = 2;
+  const [notices, setNotices] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const noticesPerPage = 10;
   let user = null;
   try {
     const userStr = localStorage.getItem('user');
     user = userStr && userStr !== 'undefined' ? JSON.parse(userStr) : null;
   } catch (e) { user = null; }
 
-  const filteredNotices = dummyNotices.filter(notice =>
+  useEffect(() => {
+    if (!user || !user._id) {
+      alert('로그인이 필요합니다.');
+      navigate('/login');
+      return;
+    }
+    const fetchNotices = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const token = localStorage.getItem('token');
+        const res = await axios.get('http://localhost:5000/api/notices', {
+          headers: { 'x-auth-token': token }
+        });
+        setNotices(res.data);
+      } catch (err) {
+        setError('공지사항 목록을 불러오지 못했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchNotices();
+    // eslint-disable-next-line
+  }, []);
+
+  const filteredNotices = notices.filter(notice =>
     notice.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const indexOfLastNotice = currentPage * noticesPerPage;
   const indexOfFirstNotice = indexOfLastNotice - noticesPerPage;
   const currentNotices = filteredNotices.slice(indexOfFirstNotice, indexOfLastNotice);
-
   const totalPages = Math.ceil(filteredNotices.length / noticesPerPage);
 
   const handlePageChange = (pageNumber) => {
@@ -76,6 +96,7 @@ export default function NoticeList() {
             <tr>
               <th>번호</th>
               <th>제목</th>
+              <th>과목</th>
               <th>작성일</th>
               <th>조회수</th>
               <th>첨부</th>
@@ -83,23 +104,27 @@ export default function NoticeList() {
             </tr>
           </thead>
           <tbody>
-            {currentNotices.map(n => (
-              <tr key={n.id}>
-                <td>{n.id}</td>
+            {currentNotices.map((n, idx) => (
+              <tr key={n._id}>
+                <td>{filteredNotices.length - (indexOfFirstNotice + idx)}</td>
                 <td>
-                  <span style={{ color: '#1976d2', cursor: 'pointer' }} onClick={() => navigate(`/professor/notice/${n.id}`)}>
+                  <span style={{ color: '#1976d2', cursor: 'pointer' }} onClick={() => navigate(`/professor/notice/${n._id}`)}>
                     {n.title}
                   </span>
                 </td>
-                <td>{n.date}</td>
+                <td>{n.course?.name || '-'}</td>
+                <td>{new Date(n.createdAt).toLocaleDateString()}</td>
                 <td>{n.views}</td>
-                <td>{n.hasFile ? 'O' : '-'}</td>
+                <td>{n.fileName ? 'O' : '-'}</td>
                 <td>
-                  <button onClick={() => navigate(`/professor/notice/edit/${n.id}`)}>수정</button>
-                  <button onClick={() => navigate(`/professor/notice/delete/${n.id}`)}>삭제</button>
+                  <button onClick={() => navigate(`/professor/notice/edit/${n._id}`)}>수정</button>
+                  <button onClick={() => navigate(`/professor/notice/delete/${n._id}`)}>삭제</button>
                 </td>
               </tr>
             ))}
+            {currentNotices.length === 0 && (
+              <tr><td colSpan={7} style={{ textAlign: 'center', color: '#aaa', padding: 32 }}>공지사항이 없습니다.</td></tr>
+            )}
           </tbody>
         </table>
         <div style={{ marginTop: 16, textAlign: 'center' }}>
@@ -109,6 +134,7 @@ export default function NoticeList() {
             </button>
           ))}
         </div>
+        {error && <div style={{ color: 'red', marginTop: 16 }}>{error}</div>}
       </div>
     </div>
   );

@@ -22,6 +22,7 @@ import NoticeWrite from './pages/professor/NoticeWrite';
 import NoticeEdit from './pages/professor/NoticeEdit';
 import NoticeDelete from './pages/professor/NoticeDelete';
 import LecturePlanProfessor from './pages/professor/LecturePlanProfessor';
+import CourseManage from './pages/professor/CourseManage';
 
 function AppContent() {
   let initialUser = null;
@@ -59,6 +60,7 @@ function AppContent() {
       <Route path="/professor/notice/edit/:id" element={<NoticeEdit />} />
       <Route path="/professor/notice/delete/:id" element={<NoticeDelete />} />
       <Route path="/professor/lecture-plan" element={<LecturePlanProfessor />} />
+      <Route path="/professor/course-manage" element={<CourseManage />} />
       <Route path="*" element={<Dashboard user={user} setUser={setUser} />} />
     </Routes>
   );

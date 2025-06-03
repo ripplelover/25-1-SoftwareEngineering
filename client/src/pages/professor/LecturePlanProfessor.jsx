@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SideMenu from '../../components/SideMenu';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const dummyPlans = [
   { id: 1, course: '소프트웨어공학', professor: '김교수', year: 2024, semester: 1, status: '공개', updated: '2024-03-01', content: '1주차: SW개론\n2주차: 요구분석...' },
@@ -22,6 +23,34 @@ export default function LecturePlanProfessor() {
   const [newPlan, setNewPlan] = useState({ course: '', year: 2024, semester: 1, status: '공개', content: '' });
   const [showWrite, setShowWrite] = useState(false);
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!user || !user._id) {
+      alert('로그인이 필요합니다.');
+      navigate('/login');
+      return;
+    }
+    // 강의계획서 목록 불러오기
+    const fetchPlans = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const token = localStorage.getItem('token');
+        const res = await axios.get(`http://localhost:5000/api/lecture-plans/${user._id}`, {
+          headers: { 'x-auth-token': token }
+        });
+        setPlans(res.data);
+      } catch (err) {
+        setError('강의계획서 목록을 불러오지 못했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPlans();
+    // eslint-disable-next-line
+  }, []);
 
   // 저장/수정
   const handleSave = () => {

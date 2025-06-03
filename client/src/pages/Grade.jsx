@@ -22,8 +22,8 @@ export default function Grade({ user, setUser }) {
   useEffect(() => {
     // API 호출 부분 주석 처리
     /*
-    if (!user?.id) return;
-    fetch(`http://localhost:5000/api/grades/${user.id}`)
+    if (!user?._id) return;
+    fetch(`http://localhost:5000/api/grades/${user._id}`)
       .then(res => res.json())
       .then(setGrades)
       .catch(err => console.error('Error fetching grades:', err));

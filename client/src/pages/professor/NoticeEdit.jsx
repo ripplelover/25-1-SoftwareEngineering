@@ -1,59 +1,137 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-
-const dummyNotices = [
-  { id: 1, title: '중간고사 일정 안내', date: '2024-03-15', views: 12, hasFile: true, content: '중간고사는 4월 15일부터 4월 19일까지 진행됩니다.' },
-  { id: 2, title: '과제 1 제출 안내', date: '2024-03-14', views: 8, hasFile: false, content: '과제 1은 3월 20일까지 제출해주세요.' },
-  { id: 3, title: '강의 자료 업로드 안내', date: '2024-03-13', views: 15, hasFile: true, content: '강의 자료가 업로드되었습니다. 확인해주세요.' },
-  { id: 4, title: '기말고사 일정 안내', date: '2024-03-12', views: 10, hasFile: false, content: '기말고사는 6월 10일부터 6월 14일까지 진행됩니다.' },
-  { id: 5, title: '강의 평가 안내', date: '2024-03-11', views: 7, hasFile: true, content: '강의 평가를 진행합니다. 참여해주세요.' }
-];
+import axios from 'axios';
 
 export default function NoticeEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [hasFile, setHasFile] = useState(false);
+  const [course, setCourse] = useState('');
+  const [file, setFile] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [existingFileName, setExistingFileName] = useState('');
+
+  let user = null;
+  try {
+    const userStr = localStorage.getItem('user');
+    user = userStr && userStr !== 'undefined' ? JSON.parse(userStr) : null;
+  } catch (e) { user = null; }
 
   useEffect(() => {
-    const notice = dummyNotices.find(n => n.id === parseInt(id));
-    if (notice) {
-      setTitle(notice.title);
-      setContent(notice.content);
-      setHasFile(notice.hasFile);
-    } else {
-      alert('공지사항을 찾을 수 없습니다.');
-      navigate('/professor/notice');
+    if (!user || !user._id) {
+      alert('로그인이 필요합니다.');
+      navigate('/login');
+      return;
     }
-  }, [id, navigate]);
+    // 기존 공지사항 데이터 불러오기
+    const fetchNotice = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const token = localStorage.getItem('token');
+        const res = await axios.get(`http://localhost:5000/api/notices/${id}`, {
+          headers: { 'x-auth-token': token }
+        });
+        setTitle(res.data.title);
+        setContent(res.data.content);
+        setCourse(res.data.course?._id || '');
+        setExistingFileName(res.data.fileName || '');
+      } catch (err) {
+        setError('공지사항 정보를 불러오지 못했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchNotice();
+    // eslint-disable-next-line
+  }, [id]);
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    if (!user || !user._id) return;
+    // 교수 담당 과목 목록 불러오기
+    const fetchCourses = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const token = localStorage.getItem('token');
+        const res = await axios.get(`http://localhost:5000/api/courses/${user._id}`, {
+          headers: { 'x-auth-token': token }
+        });
+        setCourses(res.data);
+      } catch (err) {
+        setError('과목 목록을 불러오지 못했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCourses();
+    // eslint-disable-next-line
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Here you would typically send the updated data to the server
-    alert('공지사항이 수정되었습니다.');
-    navigate('/professor/notice');
+    if (!title || !content || !course) {
+      setError('모든 필드를 입력하세요.');
+      return;
+    }
+    try {
+      setLoading(true);
+      setError('');
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('content', content);
+      formData.append('course', course);
+      if (file) formData.append('file', file);
+      await axios.put(`http://localhost:5000/api/notices/${id}`, formData, {
+        headers: {
+          'x-auth-token': token,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      alert('공지사항이 수정되었습니다.');
+      navigate('/professor/notice');
+    } catch (err) {
+      setError('공지사항 수정에 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div style={{ maxWidth: 800, margin: '0 auto', padding: 32 }}>
-      <h2>공지사항 수정</h2>
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: 16 }}>
-          <label>제목:</label>
-          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required style={{ width: '100%', padding: 8 }} />
+      <h2 style={{ fontWeight: 800, fontSize: 28, marginBottom: 24, color: '#222' }}>공지사항 수정</h2>
+      <form onSubmit={handleSubmit} style={{ background: '#fff', borderRadius: 12, boxShadow: '0 2px 12px rgba(25,118,210,0.07)', padding: 32, border: '1px solid #e0e0e0' }}>
+        <div style={{ marginBottom: 18 }}>
+          <label style={{ fontWeight: 600, fontSize: 17 }}>과목</label>
+          <select value={course} onChange={e => setCourse(e.target.value)} required style={{ width: '100%', padding: 10, borderRadius: 6, border: '1px solid #bbb', marginTop: 6 }}>
+            <option value="">과목을 선택하세요</option>
+            {courses.map(c => (
+              <option key={c._id} value={c._id}>{c.name}</option>
+            ))}
+          </select>
         </div>
-        <div style={{ marginBottom: 16 }}>
-          <label>내용:</label>
-          <textarea value={content} onChange={(e) => setContent(e.target.value)} required style={{ width: '100%', padding: 8, height: 200 }} />
+        <div style={{ marginBottom: 18 }}>
+          <label style={{ fontWeight: 600, fontSize: 17 }}>제목</label>
+          <input type="text" value={title} onChange={e => setTitle(e.target.value)} required style={{ width: '100%', padding: 10, borderRadius: 6, border: '1px solid #bbb', marginTop: 6 }} />
         </div>
-        <div style={{ marginBottom: 16 }}>
-          <label>
-            <input type="checkbox" checked={hasFile} onChange={(e) => setHasFile(e.target.checked)} />
-            첨부파일
-          </label>
+        <div style={{ marginBottom: 18 }}>
+          <label style={{ fontWeight: 600, fontSize: 17 }}>내용</label>
+          <textarea value={content} onChange={e => setContent(e.target.value)} required style={{ width: '100%', padding: 10, borderRadius: 6, border: '1px solid #bbb', minHeight: 180, marginTop: 6 }} />
         </div>
-        <button type="submit">수정</button>
+        <div style={{ marginBottom: 18 }}>
+          <label style={{ fontWeight: 600, fontSize: 17 }}>첨부파일</label>
+          <input type="file" onChange={e => setFile(e.target.files[0])} style={{ marginTop: 6 }} />
+          {existingFileName && (
+            <div style={{ marginTop: 8, color: '#888', fontSize: 15 }}>기존 첨부파일: {existingFileName}</div>
+          )}
+        </div>
+        {error && <div style={{ color: 'red', marginBottom: 16 }}>{error}</div>}
+        <button type="submit" disabled={loading} style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 8, padding: '12px 44px', fontWeight: 700, fontSize: 18, cursor: 'pointer', boxShadow: '0 2px 8px rgba(25,118,210,0.08)' }}>수정</button>
+        <button type="button" onClick={() => navigate('/professor/notice')} style={{ marginLeft: 16, background: '#ececec', color: '#333', border: 'none', borderRadius: 8, padding: '12px 44px', fontWeight: 600, fontSize: 17, cursor: 'pointer' }}>취소</button>
       </form>
     </div>
   );

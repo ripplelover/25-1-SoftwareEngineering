@@ -26,7 +26,8 @@ export default function SideMenu({ setMenuOpen, menuPos, user }) {
     { label: '자료실 관리', path: '/materials' },
     { label: '과제 관리', path: '/assignments' },
     { label: '학생 목록/성적 관리', path: '/grade-input' },
-    { label: '강의계획서 관리', path: '/professor/lecture-plan' }
+    { label: '강의계획서 관리', path: '/professor/lecture-plan' },
+    { label: '과목 관리', path: '/professor/course-manage' }
   ];
   if (user?.role === 'professor') {
     return (

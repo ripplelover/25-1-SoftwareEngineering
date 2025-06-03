@@ -39,7 +39,7 @@ export const register = async (req: Request, res: Response) => {
       message: '회원가입이 완료되었습니다.',
       token,
       user: {
-        id: user._id,
+        _id: user._id,
         studentId: user.studentId,
         name: user.name,
         email: user.email,
@@ -78,7 +78,7 @@ export const login = async (req: Request, res: Response) => {
       message: '로그인이 완료되었습니다.',
       token,
       user: {
-        id: user._id,
+        _id: user._id,
         studentId: user.studentId,
         name: user.name,
         email: user.email,

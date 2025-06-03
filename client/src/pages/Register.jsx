@@ -45,6 +45,7 @@ export default function Register({ setUser }) {
       }
       setUser(data.user);
       localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('token', data.token);
       navigate('/dashboard');
     } catch (err) {
       setError('서버 오류');

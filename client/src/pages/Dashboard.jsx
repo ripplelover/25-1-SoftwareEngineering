@@ -61,10 +61,10 @@ export default function Dashboard({ user, setUser }) {
   useEffect(() => {
     // API 호출 부분 주석 처리
     /*
-    if (!user || !user.id) return;
+    if (!user || !user._id) return;
     
     // Fetch courses
-    fetch(`http://localhost:5000/api/courses/${user.id}`)
+    fetch(`http://localhost:5000/api/courses/${user._id}`)
       .then(res => res.json())
       .then(data => {
         if (data && Array.isArray(data)) {
@@ -74,7 +74,7 @@ export default function Dashboard({ user, setUser }) {
       .catch(err => console.error('Error fetching courses:', err));
 
     // Fetch timetable
-    fetch(`http://localhost:5000/api/timetable/${user.id}`)
+    fetch(`http://localhost:5000/api/timetable/${user._id}`)
       .then(res => res.json())
       .then(data => {
         if (data && Array.isArray(data.entries)) {

@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import './Dashboard.css';
 
-export default function Dashboard() {
-  const [user, setUser] = useState({});
+export default function Dashboard({ user, setUser }) {
   const [courses, setCourses] = useState([]);
   const [timetable, setTimetable] = useState([]);
   const [notices, setNotices] = useState([]);
@@ -65,22 +64,14 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    let userData = {};
-    try {
-      const userStr = localStorage.getItem('user');
-      userData = userStr && userStr !== 'undefined' ? JSON.parse(userStr) : {};
-    } catch (e) {
-      userData = {};
-    }
-    setUser(userData);
-    if (!userData.id) return;
-    fetch(`http://localhost:5000/api/courses/${userData.id}`)
+    if (!user || !user.id) return;
+    fetch(`http://localhost:5000/api/courses/${user.id}`)
       .then(res => res.json())
       .then(setCourses);
-    fetch(`http://localhost:5000/api/timetable/${userData.id}`)
+    fetch(`http://localhost:5000/api/timetable/${user.id}`)
       .then(res => res.json())
       .then(data => setTimetable((data && Array.isArray(data.entries)) ? data.entries : []));
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     async function fetchAssignmentsAndNotices() {

@@ -1,29 +1,40 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Header from './components/Header.jsx';
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Grade from './pages/Grade';
 import Consulting from './pages/Consulting';
 import AdminService from './pages/AdminService';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
-export default function App() {
-  let user = null;
+function AppContent() {
+  let initialUser = null;
   try {
     const userStr = localStorage.getItem('user');
-    user = userStr && userStr !== 'undefined' ? JSON.parse(userStr) : null;
+    initialUser = userStr && userStr !== 'undefined' ? JSON.parse(userStr) : null;
   } catch (e) {
-    user = null;
+    initialUser = null;
   }
+  const [user, setUser] = useState(initialUser);
+  const location = useLocation();
+  const hideHeader = ['/login', '/register'].includes(location.pathname);
+  return (
+    <Routes>
+      <Route path="/login" element={<Login setUser={setUser} />} />
+      <Route path="/register" element={<Register setUser={setUser} />} />
+      <Route path="/dashboard" element={<Dashboard user={user} setUser={setUser} />} />
+      <Route path="/grades" element={<Grade />} />
+      <Route path="/consulting" element={<Consulting />} />
+      <Route path="/admin" element={<AdminService />} />
+      <Route path="*" element={<Dashboard user={user} setUser={setUser} />} />
+    </Routes>
+  );
+}
+
+export default function App() {
   return (
     <Router>
-      <Header user={user} />
-      <Routes>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/grades" element={<Grade />} />
-        <Route path="/consulting" element={<Consulting />} />
-        <Route path="/admin" element={<AdminService />} />
-        <Route path="*" element={<Dashboard />} />
-      </Routes>
+      <AppContent />
     </Router>
   );
 } 

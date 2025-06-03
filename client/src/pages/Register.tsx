@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 
-const Register = () => {
+const Register = ({ setUser }: { setUser: any }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     studentId: '',
@@ -39,6 +39,7 @@ const Register = () => {
       const response = await axios.post('http://localhost:5000/api/auth/register', formData);
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
+      setUser(response.data.user);
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || '회원가입 중 오류가 발생했습니다.');

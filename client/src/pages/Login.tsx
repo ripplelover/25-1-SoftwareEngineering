@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 
-const Login = () => {
+const Login = ({ setUser }: { setUser: any }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     studentId: '',
@@ -32,6 +32,7 @@ const Login = () => {
       const response = await axios.post('http://localhost:5000/api/auth/login', formData);
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
+      setUser(response.data.user);
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || '로그인 중 오류가 발생했습니다.');

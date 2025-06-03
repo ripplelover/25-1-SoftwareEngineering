@@ -63,6 +63,50 @@ export default function Dashboard({ user, setUser }) {
     'GPU컴퓨팅': '#90caf9',
   };
 
+  // 수강과목 리스트용 더미 데이터 (KLAS 스타일)
+  const dummyCourseList = [
+    {
+      _id: '1',
+      name: '소프트웨어공학',
+      code: 'I020-4-0846-01',
+      professor: '이기춘',
+      times: '월 5교시/새빛203, 수 6교시/새빛203',
+      noticeNew: false
+    },
+    {
+      _id: '2',
+      name: '회로이론',
+      code: 'I020-2-1994-02',
+      professor: '황호영',
+      times: '화 6교시/새빛102, 목 5교시/새빛102',
+      noticeNew: true
+    },
+    {
+      _id: '3',
+      name: '산학협력캡스톤설계',
+      code: 'I020-4-5467-01',
+      professor: '이창근',
+      times: '화 5교시/새빛102, 목 6교시/새빛102',
+      noticeNew: false
+    },
+    {
+      _id: '4',
+      name: '드로잉',
+      code: 'I000-1-8127-02',
+      professor: '이정인',
+      times: '화 1,2교시/한울202',
+      noticeNew: false
+    },
+    {
+      _id: '5',
+      name: 'GPU컴퓨팅',
+      code: 'I020-4-9615-01',
+      professor: '신동화',
+      times: '수 2교시/새빛203',
+      noticeNew: false
+    },
+  ];
+
   useEffect(() => {
     if (!user || !user.id) return;
     fetch(`http://localhost:5000/api/courses/${user.id}`)
@@ -203,6 +247,27 @@ export default function Dashboard({ user, setUser }) {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </section>
+            <section className="course-list">
+              <h2>수강과목 <span style={{ fontWeight: 400, fontSize: 18, color: '#888' }}>(2025학년도 1학기)</span></h2>
+              <div style={{ background: '#fff', borderRadius: 8, padding: 16, border: '1px solid #e0e0e0' }}>
+                {dummyCourseList.map(course => (
+                  <div key={course._id} style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid #eee', padding: '12px 0' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 600, fontSize: 18 }}>{course.name} <span style={{ color: '#888', fontWeight: 400 }}>({course.code})</span></div>
+                      <div style={{ color: '#666', fontSize: 15 }}>{course.professor} / {course.times}</div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button style={{ background: '#a5d6a7', color: '#222', border: 'none', borderRadius: 4, padding: '6px 16px', fontWeight: 500, cursor: 'pointer' }}>
+                        공지사항{course.noticeNew && <span style={{ color: 'red', fontWeight: 700, marginLeft: 4 }}>N</span>}
+                      </button>
+                      <button style={{ background: '#b0bec5', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 16px', fontWeight: 500, cursor: 'pointer' }}>강의자료실</button>
+                      <button style={{ background: '#bcaaa4', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 16px', fontWeight: 500, cursor: 'pointer' }}>강의Q&A</button>
+                      <button style={{ background: '#ffe082', color: '#222', border: 'none', borderRadius: 4, padding: '6px 16px', fontWeight: 500, cursor: 'pointer' }}>학습독독</button>
+                    </div>
+                  </div>
+                ))}
               </div>
             </section>
             <section className="timetable">

@@ -120,4 +120,16 @@ router.post('/drop/:courseId', auth, async (req: Request, res: Response) => {
   }
 });
 
+// 과목별 수강 학생 목록 조회
+router.get('/:courseId/students', auth, async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.courseId);
+    if (!course) return res.status(404).json({ message: '과목을 찾을 수 없습니다.' });
+    const students = await User.find({ _id: { $in: course.students } }, 'name studentId email department major grade');
+    res.json(students);
+  } catch (error) {
+    res.status(500).json({ message: '서버 에러가 발생했습니다.' });
+  }
+});
+
 export default router; 

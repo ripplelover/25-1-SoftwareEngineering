@@ -20,6 +20,9 @@ export default function AssignmentRoom() {
   const [editTitle, setEditTitle] = useState('');
   const [editDue, setEditDue] = useState('');
   const [submitBlob, setSubmitBlob] = useState(null);
+  const [submissionModal, setSubmissionModal] = useState({ open: false, submissions: [], assignmentTitle: '' });
+  const [scoreInputs, setScoreInputs] = useState({});
+  const [feedbackInputs, setFeedbackInputs] = useState({});
   const navigate = useNavigate();
 
   // 과제 목록 조회
@@ -141,6 +144,41 @@ export default function AssignmentRoom() {
     }
   };
 
+  // 제출 현황 모달 열기
+  const handleShowSubmissions = async (assignmentId, assignmentTitle) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`http://localhost:5000/api/assignments/${assignmentId}`,
+        { headers: { 'x-auth-token': token } });
+      setSubmissionModal({ open: true, submissions: res.data.submissions, assignmentTitle });
+      // 점수/피드백 초기화
+      const scoreObj = {};
+      const feedbackObj = {};
+      res.data.submissions.forEach(sub => {
+        scoreObj[sub._id] = sub.score || '';
+        feedbackObj[sub._id] = sub.feedback || '';
+      });
+      setScoreInputs(scoreObj);
+      setFeedbackInputs(feedbackObj);
+    } catch (err) {
+      alert('제출 현황을 불러오지 못했습니다.');
+    }
+  };
+
+  // 점수/피드백 저장
+  const handleSaveGrade = async (assignmentId, submissionId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`http://localhost:5000/api/assignments/${assignmentId}/submissions/${submissionId}`, {
+        score: scoreInputs[submissionId],
+        feedback: feedbackInputs[submissionId]
+      }, { headers: { 'x-auth-token': token } });
+      alert('저장되었습니다.');
+    } catch (err) {
+      alert('저장에 실패했습니다.');
+    }
+  };
+
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #e3f0ff 0%, #fafbfc 100%)' }}>
       <div className="dashboard-header" style={{ borderRadius: 12, marginBottom: 32, position: 'sticky', top: 0, zIndex: 1000, background: '#26334d', color: '#fff', boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
@@ -198,13 +236,13 @@ export default function AssignmentRoom() {
                     {user?.role === 'professor' && (
                       <td style={{ padding: '12px 8px' }}>
                         <button onClick={() => handleEdit(a._id)} style={{ marginRight: 8 }}>수정</button>
-                        <button onClick={() => handleDelete(a._id)} style={{ color: 'red' }}>삭제</button>
-                        <button onClick={() => navigate(`/assignments/${a._id}`)} style={{ marginLeft: 8, background: '#1976d2', color: '#fff', border: 'none', borderRadius: 4, padding: '4px 8px', cursor: 'pointer' }}>제출 현황 보기</button>
+                        <button onClick={() => handleDelete(a._id)} style={{ color: 'red', marginRight: 8 }}>삭제</button>
+                        <button onClick={() => handleShowSubmissions(a._id, a.title)} style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 4, padding: '4px 12px', fontWeight: 500, cursor: 'pointer' }}>제출 현황</button>
                       </td>
                     )}
                     {user?.role === 'student' && (
                       <td style={{ padding: '12px 8px' }}>
-                        {a.submissions.some(s => s.student._id === user._id) ? '제출완료' : '미제출'}
+                        {a.submissions?.some(s => s.student._id === user._id) ? '제출완료' : '미제출'}
                       </td>
                     )}
                   </tr>
@@ -217,6 +255,45 @@ export default function AssignmentRoom() {
           </div>
         </section>
       </main>
+      {submissionModal.open && (
+        <div style={{ position: 'fixed', left: 0, top: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.3)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setSubmissionModal({ open: false, submissions: [], assignmentTitle: '' })}>
+          <div style={{ background: '#fff', borderRadius: 10, minWidth: 480, maxWidth: '90vw', padding: 32, boxShadow: '0 2px 16px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ marginBottom: 18 }}>{submissionModal.assignmentTitle} 제출 현황</h2>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 16 }}>
+              <thead>
+                <tr style={{ background: '#f5f5f7' }}>
+                  <th>학생명</th>
+                  <th>학번</th>
+                  <th>제출일</th>
+                  <th>파일</th>
+                  <th>점수</th>
+                  <th>피드백</th>
+                  <th>관리</th>
+                </tr>
+              </thead>
+              <tbody>
+                {submissionModal.submissions.map(sub => (
+                  <tr key={sub._id}>
+                    <td>{sub.student?.name}</td>
+                    <td>{sub.student?.studentId}</td>
+                    <td>{sub.submittedAt ? new Date(sub.submittedAt).toLocaleDateString() : '-'}</td>
+                    <td>{sub.fileUrl ? <a href={sub.fileUrl} download>{sub.fileName}</a> : '미제출'}</td>
+                    <td><input type="number" value={scoreInputs[sub._id] || ''} onChange={e => setScoreInputs(inputs => ({ ...inputs, [sub._id]: e.target.value }))} style={{ width: 60 }} /></td>
+                    <td><input type="text" value={feedbackInputs[sub._id] || ''} onChange={e => setFeedbackInputs(inputs => ({ ...inputs, [sub._id]: e.target.value }))} style={{ width: 120 }} /></td>
+                    <td><button onClick={() => handleSaveGrade(sub.assignment, sub._id)} style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 4, padding: '4px 12px', fontWeight: 500, cursor: 'pointer' }}>저장</button></td>
+                  </tr>
+                ))}
+                {submissionModal.submissions.length === 0 && (
+                  <tr><td colSpan={7} style={{ textAlign: 'center', color: '#aaa', padding: 24 }}>아직 제출한 학생이 없습니다.</td></tr>
+                )}
+              </tbody>
+            </table>
+            <div style={{ textAlign: 'right', marginTop: 18 }}>
+              <button onClick={() => setSubmissionModal({ open: false, submissions: [], assignmentTitle: '' })} style={{ background: '#bdbdbd', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 24px', fontWeight: 500, cursor: 'pointer' }}>닫기</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 

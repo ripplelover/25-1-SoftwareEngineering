@@ -12,6 +12,7 @@ export default function CourseManage() {
   const [error, setError] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuPos, setMenuPos] = useState({ top: 60, left: 32 });
+  const [studentModal, setStudentModal] = useState({ open: false, students: [], courseName: '' });
   const navigate = useNavigate();
 
   let user = null;
@@ -108,6 +109,19 @@ export default function CourseManage() {
     }
   };
 
+  // 학생 목록 불러오기
+  const handleShowStudents = async (courseId, courseName) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`http://localhost:5000/api/courses/${courseId}/students`, {
+        headers: { 'x-auth-token': token }
+      });
+      setStudentModal({ open: true, students: res.data, courseName });
+    } catch (err) {
+      alert('학생 목록을 불러오지 못했습니다.');
+    }
+  };
+
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #e3f0ff 0%, #fafbfc 100%)' }}>
       <div className="dashboard-header" style={{ borderRadius: 12, marginBottom: 32, position: 'sticky', top: 0, zIndex: 1000, background: '#26334d', color: '#fff', boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
@@ -163,7 +177,11 @@ export default function CourseManage() {
                 <td>{c.name}</td>
                 <td>{c.room}</td>
                 <td>{c.time}</td>
-                <td>{c.students?.length || 0}명</td>
+                <td>
+                  <button onClick={() => handleShowStudents(c._id, c.name)} style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 14px', fontWeight: 600, cursor: 'pointer' }}>
+                    {c.students?.length || 0}명
+                  </button>
+                </td>
                 <td>
                   <button onClick={() => handleDelete(c._id)} style={{ color: 'red' }}>삭제</button>
                 </td>
@@ -175,6 +193,44 @@ export default function CourseManage() {
           </tbody>
         </table>
       </div>
+      {/* 학생 목록 모달 */}
+      {studentModal.open && (
+        <div style={{ position: 'fixed', left: 0, top: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.3)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setStudentModal({ open: false, students: [], courseName: '' })}>
+          <div style={{ background: '#fff', borderRadius: 10, minWidth: 420, maxWidth: '90vw', padding: 32, boxShadow: '0 2px 16px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ marginBottom: 18 }}>{studentModal.courseName} 수강 학생 목록</h2>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 16 }}>
+              <thead>
+                <tr style={{ background: '#f5f5f7' }}>
+                  <th>이름</th>
+                  <th>학번</th>
+                  <th>이메일</th>
+                  <th>학과</th>
+                  <th>전공</th>
+                  <th>학년</th>
+                </tr>
+              </thead>
+              <tbody>
+                {studentModal.students.map(s => (
+                  <tr key={s._id}>
+                    <td>{s.name}</td>
+                    <td>{s.studentId}</td>
+                    <td>{s.email}</td>
+                    <td>{s.department}</td>
+                    <td>{s.major}</td>
+                    <td>{s.grade}</td>
+                  </tr>
+                ))}
+                {studentModal.students.length === 0 && (
+                  <tr><td colSpan={6} style={{ textAlign: 'center', color: '#aaa', padding: 24 }}>수강 학생이 없습니다.</td></tr>
+                )}
+              </tbody>
+            </table>
+            <div style={{ textAlign: 'right', marginTop: 18 }}>
+              <button onClick={() => setStudentModal({ open: false, students: [], courseName: '' })} style={{ background: '#bdbdbd', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 24px', fontWeight: 500, cursor: 'pointer' }}>닫기</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 

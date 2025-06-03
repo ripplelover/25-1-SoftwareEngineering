@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../pages/Dashboard.css';
+import SideMenu from '../components/SideMenu';
 
 const dummyNotices = [
   { id: 1, course: '회로이론', date: '2025-06-03', type: '강의 공지사항', title: "주교재에서도 Euler's formula 및 Euler's identity를 혼용해서 설명하고 있으니 참고하시기 바랍니다.", content: '감사합니다.', author: '황호영', views: 7 },
@@ -47,39 +48,7 @@ export default function NoticeList() {
       {menuOpen && (
         <>
           <div style={{ position: 'fixed', left: 0, top: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.3)', zIndex: 2000 }} onClick={() => setMenuOpen(false)} />
-          <div style={{ position: 'absolute', top: menuPos.top, left: menuPos.left, background: '#fff', padding: 32, borderRadius: 8, minWidth: 320, maxWidth: '90vw', boxShadow: '0 2px 16px rgba(0,0,0,0.15)', zIndex: 2100 }} onClick={e => e.stopPropagation()}>
-            <h3>기능 목록</h3>
-            <div style={{ marginBottom: 18 }}>
-              <b>대학생활</b>
-              <ul style={{ listStyle: 'none', padding: 0 }}>
-                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { navigate('/dashboard'); setMenuOpen(false); }}>수강관리/시간표</li>
-                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setMenuOpen(false); }}>성적/이수현황</li>
-                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { navigate('/enroll'); setMenuOpen(false); }}>수강신청</li>
-              </ul>
-            </div>
-            <div style={{ marginBottom: 18 }}>
-              <b>강의종합정보</b>
-              <ul style={{ listStyle: 'none', padding: 0 }}>
-                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { navigate('/notices'); setMenuOpen(false); }}>강의 공지사항</li>
-                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setMenuOpen(false); }}>자료실</li>
-                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setMenuOpen(false); }}>과제</li>
-                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { navigate('/lecture-plan'); setMenuOpen(false); }}>강의계획서 조회</li>
-              </ul>
-            </div>
-            <div style={{ marginBottom: 18 }}>
-              <b>공학교육</b>
-              <ul style={{ listStyle: 'none', padding: 0 }}>
-                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setMenuOpen(false); }}>상담/평가</li>
-              </ul>
-            </div>
-            <div style={{ marginBottom: 18 }}>
-              <b>학사 서비스</b>
-              <ul style={{ listStyle: 'none', padding: 0 }}>
-                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setMenuOpen(false); }}>등록/행정서비스</li>
-              </ul>
-            </div>
-            <button onClick={() => setMenuOpen(false)} style={{ marginTop: 16 }}>닫기</button>
-          </div>
+          <SideMenu setMenuOpen={setMenuOpen} menuPos={menuPos} user={dummyUser} />
         </>
       )}
       <main style={{ maxWidth: 1000, margin: '32px auto', padding: '0 16px' }}>

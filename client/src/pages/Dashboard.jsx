@@ -10,6 +10,7 @@ export default function Dashboard() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuBtnRef = useRef(null);
   const [menuPos, setMenuPos] = useState({ top: 60, left: 32 });
+  const [activeSection, setActiveSection] = useState('dashboard');
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
@@ -82,29 +83,29 @@ export default function Dashboard() {
             <div style={{ marginBottom: 18 }}>
               <b>대학생활</b>
               <ul style={{ listStyle: 'none', padding: 0 }}>
-                <li style={{ cursor: 'pointer', padding: '4px 0' }}>수강관리/시간표</li>
-                <li style={{ cursor: 'pointer', padding: '4px 0' }}>성적/이수현황</li>
-                <li style={{ cursor: 'pointer', padding: '4px 0' }}>수강신청</li>
+                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setActiveSection('dashboard'); setMenuOpen(false); }}>수강관리/시간표</li>
+                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setActiveSection('grades'); setMenuOpen(false); }}>성적/이수현황</li>
+                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setActiveSection('enroll'); setMenuOpen(false); }}>수강신청</li>
               </ul>
             </div>
             <div style={{ marginBottom: 18 }}>
               <b>강의종합정보</b>
               <ul style={{ listStyle: 'none', padding: 0 }}>
-                <li style={{ cursor: 'pointer', padding: '4px 0' }}>강의 공지사항</li>
-                <li style={{ cursor: 'pointer', padding: '4px 0' }}>자료실</li>
-                <li style={{ cursor: 'pointer', padding: '4px 0' }}>과제</li>
+                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setActiveSection('notice'); setMenuOpen(false); }}>강의 공지사항</li>
+                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setActiveSection('material'); setMenuOpen(false); }}>자료실</li>
+                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setActiveSection('assignment'); setMenuOpen(false); }}>과제</li>
               </ul>
             </div>
             <div style={{ marginBottom: 18 }}>
               <b>공학교육</b>
               <ul style={{ listStyle: 'none', padding: 0 }}>
-                <li style={{ cursor: 'pointer', padding: '4px 0' }}>상담/평가</li>
+                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setActiveSection('consulting'); setMenuOpen(false); }}>상담/평가</li>
               </ul>
             </div>
             <div style={{ marginBottom: 18 }}>
               <b>학사 서비스</b>
               <ul style={{ listStyle: 'none', padding: 0 }}>
-                <li style={{ cursor: 'pointer', padding: '4px 0' }}>등록/행정서비스</li>
+                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setActiveSection('admin'); setMenuOpen(false); }}>등록/행정서비스</li>
               </ul>
             </div>
             <button onClick={() => setMenuOpen(false)} style={{ marginTop: 16 }}>닫기</button>
@@ -112,70 +113,95 @@ export default function Dashboard() {
         </>
       )}
       <main>
-        <section className="courses">
-          <h2>수강 과목 현황</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>과목명</th><th>교수명</th><th>강의실</th><th>시간</th>
-                <th>공지사항</th><th>강의자료실</th><th>Q&A</th><th>학습독독</th>
-              </tr>
-            </thead>
-            <tbody>
-              {courses.map(c => (
-                <tr key={c._id}>
-                  <td>{c.name}</td>
-                  <td>{c.professor}</td>
-                  <td>{c.room}</td>
-                  <td>{c.time}</td>
-                  <td><button>공지사항</button></td>
-                  <td><button>강의자료실</button></td>
-                  <td><button>Q&A</button></td>
-                  <td><button>학습독독</button></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-        <section className="timetable">
-          <h2>시간표</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>교시</th>
-                {days.map(day => <th key={day}>{day}</th>)}
-              </tr>
-            </thead>
-            <tbody>
-              {periods.map((period, i) => (
-                <tr key={period}>
-                  <td>{period}교시</td>
-                  {days.map((day, j) => <td key={day}>{timetableMatrix[i][j]}</td>)}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-        <section className="notices-assignments">
-          <div>
-            <h2>과목별 공지사항</h2>
-            <ul>
-              {notices.map((n, i) => (
-                <li key={i}>[{n.course}] {n.title} ({new Date(n.dueDate).toLocaleDateString()})</li>
-              ))}
-              {notices.length === 0 && <li>공지사항이 없습니다.</li>}
-            </ul>
-          </div>
-          <div>
-            <h2>과제 현황</h2>
-            <ul>
-              {assignments.map((a, i) => (
-                <li key={i}>[{a.course}] {a.title} (마감: {new Date(a.dueDate).toLocaleDateString()})</li>
-              ))}
-              {assignments.length === 0 && <li>진행 중인 과제가 없습니다.</li>}
-            </ul>
-          </div>
-        </section>
+        {activeSection === 'dashboard' && (
+          <>
+            <section className="courses">
+              <h2>수강 과목 현황</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>과목명</th><th>교수명</th><th>강의실</th><th>시간</th>
+                    <th>공지사항</th><th>강의자료실</th><th>Q&A</th><th>학습독독</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {courses.map(c => (
+                    <tr key={c._id}>
+                      <td>{c.name}</td>
+                      <td>{c.professor}</td>
+                      <td>{c.room}</td>
+                      <td>{c.time}</td>
+                      <td><button>공지사항</button></td>
+                      <td><button>강의자료실</button></td>
+                      <td><button>Q&A</button></td>
+                      <td><button>학습독독</button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+            <section className="timetable">
+              <h2>시간표</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>교시</th>
+                    {days.map(day => <th key={day}>{day}</th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {periods.map((period, i) => (
+                    <tr key={period}>
+                      <td>{period}교시</td>
+                      {days.map((day, j) => <td key={day}>{timetableMatrix[i][j]}</td>)}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+            <section className="notices-assignments">
+              <div>
+                <h2>과목별 공지사항</h2>
+                <ul>
+                  {notices.map((n, i) => (
+                    <li key={i}>[{n.course}] {n.title} ({new Date(n.dueDate).toLocaleDateString()})</li>
+                  ))}
+                  {notices.length === 0 && <li>공지사항이 없습니다.</li>}
+                </ul>
+              </div>
+              <div>
+                <h2>과제 현황</h2>
+                <ul>
+                  {assignments.map((a, i) => (
+                    <li key={i}>[{a.course}] {a.title} (마감: {new Date(a.dueDate).toLocaleDateString()})</li>
+                  ))}
+                  {assignments.length === 0 && <li>진행 중인 과제가 없습니다.</li>}
+                </ul>
+              </div>
+            </section>
+          </>
+        )}
+        {activeSection === 'grades' && (
+          <section><h2>성적/이수현황</h2><div>성적/이수현황 기능 구현 예정</div></section>
+        )}
+        {activeSection === 'enroll' && (
+          <section><h2>수강신청</h2><div>수강신청 기능 구현 예정</div></section>
+        )}
+        {activeSection === 'notice' && (
+          <section><h2>강의 공지사항</h2><div>강의 공지사항 기능 구현 예정</div></section>
+        )}
+        {activeSection === 'material' && (
+          <section><h2>자료실</h2><div>자료실 기능 구현 예정</div></section>
+        )}
+        {activeSection === 'assignment' && (
+          <section><h2>과제</h2><div>과제 기능 구현 예정</div></section>
+        )}
+        {activeSection === 'consulting' && (
+          <section><h2>상담/평가</h2><div>상담/평가 기능 구현 예정</div></section>
+        )}
+        {activeSection === 'admin' && (
+          <section><h2>등록/행정서비스</h2><div>등록/행정서비스 기능 구현 예정</div></section>
+        )}
       </main>
     </div>
   );

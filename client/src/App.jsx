@@ -10,6 +10,10 @@ import NoticeDetail from './pages/NoticeDetail';
 import NoticeList from './pages/NoticeList';
 import LecturePlan from './pages/LecturePlan';
 import Enroll from './pages/Enroll';
+import GradeInput from './pages/GradeInput';
+import MaterialRoom from './pages/MaterialRoom';
+import AssignmentRoom from './pages/AssignmentRoom';
+import StudentMaterialRoom from './pages/StudentMaterialRoom';
 
 function AppContent() {
   let initialUser = null;
@@ -34,6 +38,10 @@ function AppContent() {
       <Route path="/notices" element={<NoticeList />} />
       <Route path="/lecture-plan" element={<LecturePlan />} />
       <Route path="/enroll" element={<Enroll />} />
+      <Route path="/grade-input" element={<GradeInput user={user} setUser={setUser} />} />
+      <Route path="/materials" element={<MaterialRoom user={user} setUser={setUser} />} />
+      <Route path="/assignments" element={<AssignmentRoom user={user} setUser={setUser} />} />
+      <Route path="/student-materials" element={<StudentMaterialRoom user={user} setUser={setUser} />} />
       <Route path="*" element={<Dashboard user={user} setUser={setUser} />} />
     </Routes>
   );

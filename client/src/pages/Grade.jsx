@@ -70,7 +70,7 @@ export default function Grade({ user, setUser }) {
       {menuOpen && (
         <>
           <div style={{ position: 'fixed', left: 0, top: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.3)', zIndex: 2000 }} onClick={() => setMenuOpen(false)} />
-          <SideMenu setMenuOpen={setMenuOpen} menuPos={menuPos} />
+          <SideMenu setMenuOpen={setMenuOpen} menuPos={menuPos} user={user} />
         </>
       )}
 

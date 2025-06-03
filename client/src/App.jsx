@@ -7,6 +7,7 @@ import AdminService from './pages/AdminService';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import NoticeDetail from './pages/NoticeDetail';
+import NoticeList from './pages/NoticeList';
 
 function AppContent() {
   let initialUser = null;
@@ -28,6 +29,7 @@ function AppContent() {
       <Route path="/consulting" element={<Consulting />} />
       <Route path="/admin" element={<AdminService />} />
       <Route path="/notice/:noticeId" element={<NoticeDetail />} />
+      <Route path="/notices" element={<NoticeList />} />
       <Route path="*" element={<Dashboard user={user} setUser={setUser} />} />
     </Routes>
   );

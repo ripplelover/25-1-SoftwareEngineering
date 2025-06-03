@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import './Dashboard.css';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function Dashboard({ user, setUser }) {
   const [courses, setCourses] = useState([]);
@@ -12,6 +12,7 @@ export default function Dashboard({ user, setUser }) {
   const [menuPos, setMenuPos] = useState({ top: 60, left: 32 });
   const [activeSection, setActiveSection] = useState('dashboard');
   const [noticeDetail, setNoticeDetail] = useState(null);
+  const navigate = useNavigate();
 
   // 더미 데이터 (KLAS 스타일)
   const dummyCourses = [
@@ -272,7 +273,11 @@ export default function Dashboard({ user, setUser }) {
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
                       <button style={{ background: '#a5d6a7', color: '#222', border: 'none', borderRadius: 4, padding: '6px 16px', fontWeight: 500, cursor: 'pointer' }}
-                        onClick={() => setNoticeModal({ open: true, course: course.name })}>
+                        onClick={() => {
+                          const firstNotice = dummyNotices.find(n => n.course === course.name);
+                          if (firstNotice) navigate(`/notice/${firstNotice.id}`);
+                          else alert('공지사항이 없습니다.');
+                        }}>
                         공지사항{course.noticeNew && <span style={{ color: 'red', fontWeight: 700, marginLeft: 4 }}>N</span>}
                       </button>
                       <button style={{ background: '#b0bec5', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 16px', fontWeight: 500, cursor: 'pointer' }}>강의자료실</button>

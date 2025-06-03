@@ -11,6 +11,7 @@ export default function MaterialRoom({ user, setUser }) {
     { id: 2, title: '실습자료2.zip', uploader: '김교수', date: '2024-06-03', file: null, fileName: '', viewCount: 20, content: '실습자료입니다.' }
   ]);
   const [newTitle, setNewTitle] = useState('');
+  const [newContent, setNewContent] = useState('');
   const [editId, setEditId] = useState(null);
   const [editTitle, setEditTitle] = useState('');
   const [newFile, setNewFile] = useState(null);
@@ -27,10 +28,11 @@ export default function MaterialRoom({ user, setUser }) {
       file: newFile,
       fileName: newFile.name,
       viewCount: 0,
-      content: ''
+      content: newContent
     }]);
     setNewTitle('');
     setNewFile(null);
+    setNewContent('');
   };
   // 삭제
   const handleDelete = (id) => {
@@ -85,8 +87,9 @@ export default function MaterialRoom({ user, setUser }) {
           </div>
           <div style={{ padding: '32px 40px' }}>
             {user?.role === 'professor' && (
-              <div style={{ marginBottom: 24, display: 'flex', gap: 12 }}>
+              <div style={{ marginBottom: 24, display: 'flex', gap: 12, alignItems: 'center' }}>
                 <input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="자료명 입력" style={{ padding: '8px', borderRadius: 4, border: '1px solid #ccc', minWidth: 200 }} />
+                <input value={newContent} onChange={e => setNewContent(e.target.value)} placeholder="설명(내용) 입력" style={{ padding: '8px', borderRadius: 4, border: '1px solid #ccc', minWidth: 200 }} />
                 <input type="file" onChange={e => setNewFile(e.target.files[0])} />
                 <button onClick={handleAdd} style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 24px', fontWeight: 600, cursor: 'pointer' }}>등록</button>
               </div>

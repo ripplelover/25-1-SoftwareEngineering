@@ -153,30 +153,38 @@ export default function Dashboard({ user, setUser }) {
   if (user?.role === 'professor') {
     // 교수 전용 대시보드
     return (
-      <div className="dashboard-root">
-        <div className="dashboard-header" style={{ borderRadius: 8, marginBottom: 24, position: 'sticky', top: 0, zIndex: 1000 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div className="dashboard-title">학사관리시스템</div>
-            <button style={{ fontSize: '1.2em', background: '#e1bee7', color: '#2d3e50', border: 'none', borderRadius: 4, padding: '6px 14px', cursor: 'pointer', marginLeft: 8 }} onClick={e => {
-              // 메뉴 오픈 로직 필요시 추가
+      <div className="dashboard-root" style={{ background: 'linear-gradient(135deg, #e3f0ff 0%, #fafbfc 100%)', minHeight: '100vh' }}>
+        <div className="dashboard-header" style={{ borderRadius: 12, marginBottom: 32, position: 'sticky', top: 0, zIndex: 1000, background: '#26334d', color: '#fff', boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div className="dashboard-title" style={{ fontSize: 28, fontWeight: 900, letterSpacing: 2, color: '#fff' }}>학사관리시스템</div>
+            <button style={{ fontSize: '1.2em', background: '#b39ddb', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 22px', cursor: 'pointer', marginLeft: 16, fontWeight: 700, boxShadow: '0 2px 8px rgba(100,100,200,0.08)' }} onClick={e => {
+              const rect = e.target.getBoundingClientRect();
+              setMenuPos({ top: rect.bottom + window.scrollY + 8, left: rect.left + window.scrollX });
+              setMenuOpen(true);
             }}>☰ 메뉴</button>
           </div>
-          <div className="dashboard-user">
+          <div className="dashboard-user" style={{ fontWeight: 600, fontSize: 17 }}>
             <span>{user?.name || '이름없음'}({user?.studentId || '교번없음'})</span>
-            <button onClick={() => { localStorage.clear(); window.location.href = '/login'; }}>Logout</button>
+            <button onClick={() => { localStorage.clear(); window.location.href = '/login'; }} style={{ marginLeft: 18, background: '#fff', color: '#26334d', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 2px 8px rgba(100,100,200,0.08)' }}>Logout</button>
           </div>
         </div>
-        <main style={{ maxWidth: 1000, margin: '32px auto', padding: '0 16px' }}>
-          <section style={{ background: '#fff', borderRadius: 12, marginBottom: 32, padding: 0, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #e0e0e0' }}>
-            <div style={{ borderBottom: '2px solid #bdbdbd', background: '#fafbfc', padding: '24px 32px 16px 32px', borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
-              <div style={{ fontWeight: 700, fontSize: 22, color: '#222', marginBottom: 6 }}>교수 대시보드</div>
-              <div style={{ color: '#666', fontSize: 16 }}>강의 공지사항 관리, 자료실 관리, 과제 관리, 학생 성적 관리 등 교수 전용 기능을 사용할 수 있습니다.</div>
+        {menuOpen && (
+          <>
+            <div style={{ position: 'fixed', left: 0, top: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.3)', zIndex: 2000 }} onClick={() => setMenuOpen(false)} />
+            <SideMenu setMenuOpen={setMenuOpen} menuPos={menuPos} user={user} />
+          </>
+        )}
+        <main style={{ maxWidth: 520, margin: '0 auto', padding: '0 16px' }}>
+          <section style={{ background: '#fff', borderRadius: 18, margin: '60px 0 0 0', padding: 0, boxShadow: '0 4px 24px rgba(0,0,0,0.10)', border: '1px solid #e0e0e0' }}>
+            <div style={{ borderBottom: '2px solid #bdbdbd', background: '#f5f7fa', padding: '28px 40px 18px 40px', borderTopLeftRadius: 18, borderTopRightRadius: 18 }}>
+              <div style={{ fontWeight: 900, fontSize: 26, color: '#222', marginBottom: 8, letterSpacing: 0.5 }}>교수 대시보드</div>
+              <div style={{ color: '#666', fontSize: 16, fontWeight: 500 }}>강의 공지사항 관리, 자료실 관리, 과제 관리, 학생 성적 관리 등 교수 전용 기능을 사용할 수 있습니다.</div>
             </div>
-            <div style={{ padding: '32px 40px', display: 'flex', flexDirection: 'column', gap: 24 }}>
-              <button style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 8, padding: '14px 0', fontWeight: 700, fontSize: 17, cursor: 'pointer', marginBottom: 8 }}>공지사항 관리</button>
-              <button style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 8, padding: '14px 0', fontWeight: 700, fontSize: 17, cursor: 'pointer', marginBottom: 8 }}>자료실 관리</button>
-              <button style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 8, padding: '14px 0', fontWeight: 700, fontSize: 17, cursor: 'pointer', marginBottom: 8 }}>과제 관리</button>
-              <button style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 8, padding: '14px 0', fontWeight: 700, fontSize: 17, cursor: 'pointer', marginBottom: 8 }}>학생 목록/성적 관리</button>
+            <div style={{ padding: '40px 40px', display: 'flex', flexDirection: 'column', gap: 28 }}>
+              <button onClick={() => navigate('/professor/notice')} style={{ background: 'linear-gradient(90deg,#1976d2 60%,#7e57c2 100%)', color: '#fff', border: 'none', borderRadius: 12, padding: '22px 0', fontWeight: 800, fontSize: 20, cursor: 'pointer', marginBottom: 8, boxShadow: '0 2px 12px rgba(25,118,210,0.10)', letterSpacing: 1, transition: '0.2s', outline: 'none' }}>공지사항 관리</button>
+              <button onClick={() => navigate('/materials')} style={{ background: 'linear-gradient(90deg,#1976d2 60%,#26c6da 100%)', color: '#fff', border: 'none', borderRadius: 12, padding: '22px 0', fontWeight: 800, fontSize: 20, cursor: 'pointer', marginBottom: 8, boxShadow: '0 2px 12px rgba(25,118,210,0.10)', letterSpacing: 1, transition: '0.2s', outline: 'none' }}>자료실 관리</button>
+              <button onClick={() => navigate('/assignments')} style={{ background: 'linear-gradient(90deg,#1976d2 60%,#ffb74d 100%)', color: '#fff', border: 'none', borderRadius: 12, padding: '22px 0', fontWeight: 800, fontSize: 20, cursor: 'pointer', marginBottom: 8, boxShadow: '0 2px 12px rgba(25,118,210,0.10)', letterSpacing: 1, transition: '0.2s', outline: 'none' }}>과제 관리</button>
+              <button onClick={() => navigate('/grade-input')} style={{ background: 'linear-gradient(90deg,#1976d2 60%,#66bb6a 100%)', color: '#fff', border: 'none', borderRadius: 12, padding: '22px 0', fontWeight: 800, fontSize: 20, cursor: 'pointer', marginBottom: 8, boxShadow: '0 2px 12px rgba(25,118,210,0.10)', letterSpacing: 1, transition: '0.2s', outline: 'none' }}>학생 목록/성적 관리</button>
             </div>
           </section>
         </main>

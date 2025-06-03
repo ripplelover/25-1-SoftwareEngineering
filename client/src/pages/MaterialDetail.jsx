@@ -15,11 +15,16 @@ export default function MaterialDetail({ user, setUser }) {
   const [menuPos, setMenuPos] = useState({ top: 60, left: 32 });
   const [material, setMaterial] = useState(null);
   const [viewCount, setViewCount] = useState(0);
+  const [editMode, setEditMode] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
 
   useEffect(() => {
     const mat = dummyMaterials.find(m => String(m.id) === String(id));
     setMaterial(mat);
     if (mat) setViewCount(mat.viewCount + 1);
+    setEditTitle(mat ? mat.title : '');
+    setEditContent(mat ? mat.content : '');
   }, [id]);
 
   // 파일 다운로드 (더미)
@@ -65,7 +70,13 @@ export default function MaterialDetail({ user, setUser }) {
       <main style={{ maxWidth: 900, margin: '32px auto', padding: '0 16px' }}>
         <section style={{ background: '#fff', borderRadius: 12, marginBottom: 32, padding: 0, boxShadow: '0 4px 16px rgba(0,0,0,0.07)', border: '1px solid #e0e0e0' }}>
           <div style={{ borderBottom: '2px solid #bdbdbd', background: '#f7f7fa', padding: '28px 40px 18px 40px', borderTopLeftRadius: 12, borderTopRightRadius: 12 }}>
-            <div style={{ fontWeight: 700, fontSize: 23, color: '#2d3e50', marginBottom: 8, letterSpacing: 0.5 }}>{material.title}</div>
+            {editMode ? (
+              <>
+                <input value={editTitle} onChange={e => setEditTitle(e.target.value)} style={{ fontWeight: 700, fontSize: 23, marginBottom: 8, width: '100%' }} />
+              </>
+            ) : (
+              <div style={{ fontWeight: 700, fontSize: 23, color: '#2d3e50', marginBottom: 8, letterSpacing: 0.5 }}>{material.title}</div>
+            )}
             <div style={{ color: '#666', marginBottom: 8 }}>
               작성자: {material.uploader} &nbsp; 등록일: {material.date} &nbsp; 조회수: {viewCount}
             </div>
@@ -76,8 +87,27 @@ export default function MaterialDetail({ user, setUser }) {
             </div>
           </div>
           <div style={{ padding: '32px 40px', minHeight: 120, fontSize: 16 }}>
-            {material.content}
+            {editMode ? (
+              <textarea value={editContent} onChange={e => setEditContent(e.target.value)} style={{ width: '100%', minHeight: 100, fontSize: 16 }} />
+            ) : (
+              material.content
+            )}
           </div>
+          {user?.role === 'professor' && (
+            <div style={{ textAlign: 'right', padding: '0 40px 16px 40px' }}>
+              {editMode ? (
+                <>
+                  <button onClick={() => { setMaterial({ ...material, title: editTitle, content: editContent }); setEditMode(false); }} style={{ marginRight: 8, background: '#1976d2', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 24px', fontWeight: 600, cursor: 'pointer' }}>저장</button>
+                  <button onClick={() => { setEditMode(false); setEditTitle(material.title); setEditContent(material.content); }} style={{ background: '#bdbdbd', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 24px', fontWeight: 600, cursor: 'pointer' }}>취소</button>
+                </>
+              ) : (
+                <>
+                  <button onClick={() => setEditMode(true)} style={{ marginRight: 8, background: '#1976d2', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 24px', fontWeight: 600, cursor: 'pointer' }}>수정</button>
+                  <button onClick={() => { if(window.confirm('정말 삭제하시겠습니까?')) navigate('/materials'); }} style={{ background: '#c62828', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 24px', fontWeight: 600, cursor: 'pointer' }}>삭제</button>
+                </>
+              )}
+            </div>
+          )}
           <div style={{ borderTop: '1px solid #eee', padding: '18px 40px', fontSize: 15, color: '#444', display: 'flex', justifyContent: 'space-between', gap: 16, background: '#f7f7fa', borderBottomLeftRadius: 12, borderBottomRightRadius: 12 }}>
             <div style={{ flex: 1, textAlign: 'left' }}>
               <b style={{ color: '#222' }}>이전 글</b> : {prev ? <span style={{ color: '#1976d2', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => navigate(`/materials/${prev.id}`)}>{prev.title}</span> : <span style={{ color: '#aaa' }}>이전글이 없습니다.</span>}

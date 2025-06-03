@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../pages/Dashboard.css';
 
@@ -21,18 +21,66 @@ export default function NoticeList() {
   );
   const courses = Array.from(new Set(dummyNotices.map(n => n.course)));
 
+  // 메뉴 오버레이 상태 및 위치
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuBtnRef = useRef(null);
+  const [menuPos, setMenuPos] = useState({ top: 60, left: 32 });
+
   return (
     <div className="dashboard-root">
       <div className="dashboard-header" style={{ borderRadius: 8, marginBottom: 24, position: 'sticky', top: 0, zIndex: 1000 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div className="dashboard-title">학사관리시스템</div>
-          <button style={{ fontSize: '1.2em', background: '#e1bee7', color: '#2d3e50', border: 'none', borderRadius: 4, padding: '6px 14px', cursor: 'pointer', marginLeft: 8 }} onClick={() => navigate('/dashboard')}>☰ 메뉴</button>
+          <button ref={menuBtnRef} style={{ fontSize: '1.2em', background: '#e1bee7', color: '#2d3e50', border: 'none', borderRadius: 4, padding: '6px 14px', cursor: 'pointer', marginLeft: 8 }} onClick={() => {
+            if (menuBtnRef.current) {
+              const rect = menuBtnRef.current.getBoundingClientRect();
+              setMenuPos({ top: rect.bottom + window.scrollY + 8, left: rect.left + window.scrollX });
+            }
+            setMenuOpen(true);
+          }}>☰ 메뉴</button>
         </div>
         <div className="dashboard-user">
           <span>{dummyUser.name}({dummyUser.studentId})</span>
           <button onClick={() => { localStorage.clear(); window.location.href = '/login'; }}>Logout</button>
         </div>
       </div>
+      {menuOpen && (
+        <>
+          <div style={{ position: 'fixed', left: 0, top: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.3)', zIndex: 2000 }} onClick={() => setMenuOpen(false)} />
+          <div style={{ position: 'absolute', top: menuPos.top, left: menuPos.left, background: '#fff', padding: 32, borderRadius: 8, minWidth: 320, maxWidth: '90vw', boxShadow: '0 2px 16px rgba(0,0,0,0.15)', zIndex: 2100 }} onClick={e => e.stopPropagation()}>
+            <h3>기능 목록</h3>
+            <div style={{ marginBottom: 18 }}>
+              <b>대학생활</b>
+              <ul style={{ listStyle: 'none', padding: 0 }}>
+                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { navigate('/dashboard'); setMenuOpen(false); }}>수강관리/시간표</li>
+                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setMenuOpen(false); }}>성적/이수현황</li>
+                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setMenuOpen(false); }}>수강신청</li>
+              </ul>
+            </div>
+            <div style={{ marginBottom: 18 }}>
+              <b>강의종합정보</b>
+              <ul style={{ listStyle: 'none', padding: 0 }}>
+                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { navigate('/notices'); setMenuOpen(false); }}>강의 공지사항</li>
+                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setMenuOpen(false); }}>자료실</li>
+                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setMenuOpen(false); }}>과제</li>
+              </ul>
+            </div>
+            <div style={{ marginBottom: 18 }}>
+              <b>공학교육</b>
+              <ul style={{ listStyle: 'none', padding: 0 }}>
+                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setMenuOpen(false); }}>상담/평가</li>
+              </ul>
+            </div>
+            <div style={{ marginBottom: 18 }}>
+              <b>학사 서비스</b>
+              <ul style={{ listStyle: 'none', padding: 0 }}>
+                <li style={{ cursor: 'pointer', padding: '4px 0' }} onClick={() => { setMenuOpen(false); }}>등록/행정서비스</li>
+              </ul>
+            </div>
+            <button onClick={() => setMenuOpen(false)} style={{ marginTop: 16 }}>닫기</button>
+          </div>
+        </>
+      )}
       <main style={{ maxWidth: 1000, margin: '32px auto', padding: '0 16px' }}>
         <section style={{ background: '#fff', borderRadius: 8, marginBottom: 32, padding: 0, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #e0e0e0' }}>
           <div style={{ borderBottom: '2px solid #bdbdbd', background: '#fafbfc', padding: '24px 32px 16px 32px', borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>

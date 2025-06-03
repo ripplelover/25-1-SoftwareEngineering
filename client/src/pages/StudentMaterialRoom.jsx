@@ -1,19 +1,21 @@
 import React, { useState } from 'react';
 import SideMenu from '../components/SideMenu';
 import '../pages/Dashboard.css';
+import { useNavigate } from 'react-router-dom';
 
 export default function StudentMaterialRoom({ user, setUser }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuPos, setMenuPos] = useState({ top: 60, left: 32 });
   const [materials, setMaterials] = useState([
-    { id: 1, title: '팀 구성', uploader: '안진수', date: '2025-03-17', file: null, fileName: 'team.txt', studentId: '2022202062' },
-    { id: 2, title: '팀 구성', uploader: '김태관', date: '2025-03-17', file: null, fileName: 'team2.txt', studentId: '2022202001' }
+    { id: 1, title: '팀 구성', uploader: '안진수', date: '2025-03-17', file: null, fileName: 'team.txt', studentId: '2022202062', viewCount: 16, content: '팀 구성 내용입니다.' },
+    { id: 2, title: '팀 구성', uploader: '김태관', date: '2025-03-17', file: null, fileName: 'team2.txt', studentId: '2022202001', viewCount: 18, content: '팀 구성 내용입니다.' }
   ]);
   const [newTitle, setNewTitle] = useState('');
   const [newFile, setNewFile] = useState(null);
   const [editId, setEditId] = useState(null);
   const [editTitle, setEditTitle] = useState('');
   const [editFile, setEditFile] = useState(null);
+  const navigate = useNavigate();
 
   // 등록
   const handleAdd = () => {
@@ -99,39 +101,24 @@ export default function StudentMaterialRoom({ user, setUser }) {
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 16, background: '#fff' }}>
               <thead>
                 <tr style={{ background: '#f5e6fa' }}>
+                  <th>번호</th>
                   <th>제목</th>
                   <th>작성자</th>
                   <th>등록일</th>
+                  <th>조회수</th>
                   <th>파일</th>
                   {user?.role === 'student' && <th>관리</th>}
                 </tr>
               </thead>
               <tbody>
-                {materials.map(m => (
+                {materials.map((m, idx) => (
                   <tr key={m.id}>
-                    <td style={{ padding: '12px 8px' }}>
-                      {editId === m.id ? (
-                        <input value={editTitle} onChange={e => setEditTitle(e.target.value)} style={{ padding: '6px', borderRadius: 4, border: '1px solid #ccc', minWidth: 120 }} />
-                      ) : (
-                        m.title
-                      )}
-                    </td>
+                    <td style={{ padding: '12px 8px' }}>{materials.length - idx}</td>
+                    <td style={{ padding: '12px 8px', color: '#1976d2', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => navigate(`/student-materials/${m.id}`)}>{m.title}</td>
                     <td style={{ padding: '12px 8px' }}>{m.uploader}</td>
                     <td style={{ padding: '12px 8px' }}>{m.date}</td>
-                    <td style={{ padding: '12px 8px' }}>
-                      {editId === m.id ? (
-                        <input type="file" onChange={e => setEditFile(e.target.files[0])} />
-                      ) : m.fileName ? (
-                        <>
-                          {m.fileName}
-                          {m.file && (
-                            <button style={{ marginLeft: 8, background: '#bdbdbd', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 16px', fontWeight: 500, cursor: 'pointer' }} onClick={() => handleDownload(m.file, m.fileName)}>다운로드</button>
-                          )}
-                        </>
-                      ) : (
-                        <span style={{ color: '#aaa' }}>파일 없음</span>
-                      )}
-                    </td>
+                    <td style={{ padding: '12px 8px' }}>{m.viewCount}</td>
+                    <td style={{ padding: '12px 8px' }}>{m.fileName ? m.fileName : '파일 없음'}</td>
                     {user?.role === 'student' && m.studentId === user.studentId && (
                       <td style={{ padding: '12px 8px' }}>
                         {editId === m.id ? (
@@ -150,7 +137,7 @@ export default function StudentMaterialRoom({ user, setUser }) {
                   </tr>
                 ))}
                 {materials.length === 0 && (
-                  <tr><td colSpan={user?.role === 'student' ? 5 : 4} style={{ textAlign: 'center', color: '#aaa', padding: 32 }}>자료가 없습니다.</td></tr>
+                  <tr><td colSpan={user?.role === 'student' ? 7 : 6} style={{ textAlign: 'center', color: '#aaa', padding: 32 }}>자료가 없습니다.</td></tr>
                 )}
               </tbody>
             </table>

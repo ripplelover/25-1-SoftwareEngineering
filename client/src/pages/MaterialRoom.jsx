@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import SideMenu from '../components/SideMenu';
 import '../pages/Dashboard.css';
+import { useNavigate } from 'react-router-dom';
 
 export default function MaterialRoom({ user, setUser }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuPos, setMenuPos] = useState({ top: 60, left: 32 });
   const [materials, setMaterials] = useState([
-    { id: 1, title: '강의자료1.pdf', uploader: '김교수', date: '2024-06-01' },
-    { id: 2, title: '실습자료2.zip', uploader: '김교수', date: '2024-06-03' }
+    { id: 1, title: '강의자료1.pdf', uploader: '김교수', date: '2024-06-01', file: null, fileName: '', viewCount: 17, content: '11-2 Reliability 강의자료입니다.' },
+    { id: 2, title: '실습자료2.zip', uploader: '김교수', date: '2024-06-03', file: null, fileName: '', viewCount: 20, content: '실습자료입니다.' }
   ]);
   const [newTitle, setNewTitle] = useState('');
   const [editId, setEditId] = useState(null);
   const [editTitle, setEditTitle] = useState('');
   const [newFile, setNewFile] = useState(null);
+  const navigate = useNavigate();
 
   // 등록
   const handleAdd = () => {
@@ -23,7 +25,9 @@ export default function MaterialRoom({ user, setUser }) {
       uploader: user.name,
       date: new Date().toISOString().slice(0, 10),
       file: newFile,
-      fileName: newFile.name
+      fileName: newFile.name,
+      viewCount: 0,
+      content: ''
     }]);
     setNewTitle('');
     setNewFile(null);
@@ -90,28 +94,25 @@ export default function MaterialRoom({ user, setUser }) {
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 16, background: '#fff' }}>
               <thead>
                 <tr style={{ background: '#f5e6fa' }}>
-                  <th>자료명</th>
-                  <th>업로더</th>
+                  <th>번호</th>
+                  <th>제목</th>
+                  <th>작성자</th>
                   <th>등록일</th>
+                  <th>조회수</th>
+                  <th>파일</th>
                   {user?.role === 'professor' && <th>관리</th>}
                   {user?.role === 'student' && <th>다운로드</th>}
                 </tr>
               </thead>
               <tbody>
-                {materials.map(m => (
+                {materials.map((m, idx) => (
                   <tr key={m.id}>
-                    <td style={{ padding: '12px 8px' }}>
-                      {editId === m.id ? (
-                        <input value={editTitle} onChange={e => setEditTitle(e.target.value)} style={{ padding: '6px', borderRadius: 4, border: '1px solid #ccc', minWidth: 120 }} />
-                      ) : (
-                        m.title
-                      )}
-                      {m.fileName && (
-                        <span style={{ marginLeft: 8, color: '#888', fontSize: 14 }}>({m.fileName})</span>
-                      )}
-                    </td>
+                    <td style={{ padding: '12px 8px' }}>{materials.length - idx}</td>
+                    <td style={{ padding: '12px 8px', color: '#1976d2', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => navigate(`/materials/${m.id}`)}>{m.title}</td>
                     <td style={{ padding: '12px 8px' }}>{m.uploader}</td>
                     <td style={{ padding: '12px 8px' }}>{m.date}</td>
+                    <td style={{ padding: '12px 8px' }}>{m.viewCount}</td>
+                    <td style={{ padding: '12px 8px' }}>{m.fileName ? m.fileName : '파일 없음'}</td>
                     {user?.role === 'professor' && (
                       <td style={{ padding: '12px 8px' }}>
                         {editId === m.id ? (
@@ -142,7 +143,7 @@ export default function MaterialRoom({ user, setUser }) {
                   </tr>
                 ))}
                 {materials.length === 0 && (
-                  <tr><td colSpan={user?.role === 'professor' ? 4 : 4} style={{ textAlign: 'center', color: '#aaa', padding: 32 }}>자료가 없습니다.</td></tr>
+                  <tr><td colSpan={user?.role === 'professor' ? 7 : 7} style={{ textAlign: 'center', color: '#aaa', padding: 32 }}>자료가 없습니다.</td></tr>
                 )}
               </tbody>
             </table>

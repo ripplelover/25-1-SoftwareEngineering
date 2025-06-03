@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import SideMenu from '../components/SideMenu';
 import '../pages/Dashboard.css';
+import { useNavigate } from 'react-router-dom';
 
 export default function AssignmentRoom({ user, setUser }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuPos, setMenuPos] = useState({ top: 60, left: 32 });
   const [assignments, setAssignments] = useState([
-    { id: 1, title: '과제1: 프로젝트 계획서', due: '2024-06-10', submissions: [{ student: '홍길동', file: 'plan.pdf' }] },
-    { id: 2, title: '과제2: 코드 제출', due: '2024-06-20', submissions: [] }
+    { id: 1, title: '과제1: 프로젝트 계획서', due: '2024-06-10', file: null, fileName: 'plan.pdf', submissions: [{ student: '홍길동', file: null, fileName: 'plan.pdf' }] },
+    { id: 2, title: '과제2: 코드 제출', due: '2024-06-20', file: null, fileName: 'code.zip', submissions: [] }
   ]);
   const [newTitle, setNewTitle] = useState('');
   const [newDue, setNewDue] = useState('');
@@ -16,6 +17,7 @@ export default function AssignmentRoom({ user, setUser }) {
   const [editTitle, setEditTitle] = useState('');
   const [editDue, setEditDue] = useState('');
   const [submitBlob, setSubmitBlob] = useState(null);
+  const navigate = useNavigate();
 
   // 등록
   const handleAdd = () => {
@@ -94,72 +96,34 @@ export default function AssignmentRoom({ user, setUser }) {
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 16, background: '#fff' }}>
               <thead>
                 <tr style={{ background: '#f5e6fa' }}>
-                  <th>과제명</th>
+                  <th>번호</th>
+                  <th>제목</th>
                   <th>마감일</th>
+                  <th>파일</th>
                   {user?.role === 'professor' && <th>관리</th>}
-                  {user?.role === 'student' && <th>제출</th>}
-                  {user?.role === 'professor' && <th>제출현황</th>}
+                  {user?.role === 'student' && <th>제출여부</th>}
                 </tr>
               </thead>
               <tbody>
-                {assignments.map(a => (
+                {assignments.map((a, idx) => (
                   <tr key={a.id}>
-                    <td style={{ padding: '12px 8px' }}>
-                      {editId === a.id ? (
-                        <input value={editTitle} onChange={e => setEditTitle(e.target.value)} style={{ padding: '6px', borderRadius: 4, border: '1px solid #ccc', minWidth: 120 }} />
-                      ) : (
-                        a.title
-                      )}
-                      {a.fileName && (
-                        <span style={{ marginLeft: 8, color: '#888', fontSize: 14 }}>({a.fileName})</span>
-                      )}
-                    </td>
-                    <td style={{ padding: '12px 8px' }}>
-                      {editId === a.id ? (
-                        <input type="date" value={editDue} onChange={e => setEditDue(e.target.value)} style={{ padding: '6px', borderRadius: 4, border: '1px solid #ccc', minWidth: 120 }} />
-                      ) : (
-                        a.due
-                      )}
-                    </td>
+                    <td style={{ padding: '12px 8px' }}>{assignments.length - idx}</td>
+                    <td style={{ padding: '12px 8px', color: '#1976d2', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => navigate(`/assignments/${a.id}`)}>{a.title}</td>
+                    <td style={{ padding: '12px 8px' }}>{a.due}</td>
+                    <td style={{ padding: '12px 8px' }}>{a.fileName ? a.fileName : '파일 없음'}</td>
                     {user?.role === 'professor' && (
                       <td style={{ padding: '12px 8px' }}>
-                        {editId === a.id ? (
-                          <>
-                            <button onClick={() => handleEditSave(a.id)} style={{ marginRight: 8 }}>저장</button>
-                            <button onClick={() => setEditId(null)}>취소</button>
-                          </>
-                        ) : (
-                          <>
-                            <button onClick={() => handleEdit(a.id)} style={{ marginRight: 8 }}>수정</button>
-                            <button onClick={() => handleDelete(a.id)} style={{ color: 'red' }}>삭제</button>
-                            {a.file && (
-                              <button style={{ marginLeft: 8, background: '#bdbdbd', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 16px', fontWeight: 500, cursor: 'pointer' }} onClick={() => handleDownload(a.file, a.fileName)}>다운로드</button>
-                            )}
-                          </>
-                        )}
+                        <button style={{ marginRight: 8 }}>수정</button>
+                        <button style={{ color: 'red' }}>삭제</button>
                       </td>
                     )}
                     {user?.role === 'student' && (
-                      <td style={{ padding: '12px 8px' }}>
-                        <input type="file" onChange={e => setSubmitBlob(e.target.files[0])} style={{ marginRight: 8 }} />
-                        <button onClick={() => handleSubmit(a.id)} style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 16px', fontWeight: 500, cursor: 'pointer' }}>제출</button>
-                        {a.submissions.some(s => s.student === user.name) && <span style={{ marginLeft: 8, color: '#388e3c' }}>제출완료</span>}
-                      </td>
-                    )}
-                    {user?.role === 'professor' && (
-                      <td style={{ padding: '12px 8px' }}>
-                        {a.submissions.length === 0 ? '제출 없음' : a.submissions.map((s, i) => (
-                          <div key={i}>
-                            {s.student}: {s.fileName}
-                            <button style={{ marginLeft: 8, background: '#bdbdbd', color: '#fff', border: 'none', borderRadius: 4, padding: '4px 10px', fontWeight: 500, cursor: 'pointer' }} onClick={() => handleDownload(s.file, s.fileName)}>다운로드</button>
-                          </div>
-                        ))}
-                      </td>
+                      <td style={{ padding: '12px 8px' }}>{a.submissions.some(s => s.student === user.name) ? '제출완료' : '미제출'}</td>
                     )}
                   </tr>
                 ))}
                 {assignments.length === 0 && (
-                  <tr><td colSpan={user?.role === 'professor' ? 5 : 4} style={{ textAlign: 'center', color: '#aaa', padding: 32 }}>과제가 없습니다.</td></tr>
+                  <tr><td colSpan={user?.role === 'professor' ? 5 : 5} style={{ textAlign: 'center', color: '#aaa', padding: 32 }}>과제가 없습니다.</td></tr>
                 )}
               </tbody>
             </table>

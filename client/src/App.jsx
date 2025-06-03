@@ -14,6 +14,9 @@ import GradeInput from './pages/GradeInput';
 import MaterialRoom from './pages/MaterialRoom';
 import AssignmentRoom from './pages/AssignmentRoom';
 import StudentMaterialRoom from './pages/StudentMaterialRoom';
+import MaterialDetail from './pages/MaterialDetail';
+import StudentMaterialDetail from './pages/StudentMaterialDetail';
+import AssignmentDetail from './pages/AssignmentDetail';
 
 function AppContent() {
   let initialUser = null;
@@ -42,6 +45,9 @@ function AppContent() {
       <Route path="/materials" element={<MaterialRoom user={user} setUser={setUser} />} />
       <Route path="/assignments" element={<AssignmentRoom user={user} setUser={setUser} />} />
       <Route path="/student-materials" element={<StudentMaterialRoom user={user} setUser={setUser} />} />
+      <Route path="/materials/:id" element={<MaterialDetail user={user} setUser={setUser} />} />
+      <Route path="/student-materials/:id" element={<StudentMaterialDetail user={user} setUser={setUser} />} />
+      <Route path="/assignments/:id" element={<AssignmentDetail user={user} setUser={setUser} />} />
       <Route path="*" element={<Dashboard user={user} setUser={setUser} />} />
     </Routes>
   );

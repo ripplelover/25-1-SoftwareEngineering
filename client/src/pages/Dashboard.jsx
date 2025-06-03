@@ -150,6 +150,40 @@ export default function Dashboard({ user, setUser }) {
     }
   });
 
+  if (user?.role === 'professor') {
+    // 교수 전용 대시보드
+    return (
+      <div className="dashboard-root">
+        <div className="dashboard-header" style={{ borderRadius: 8, marginBottom: 24, position: 'sticky', top: 0, zIndex: 1000 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div className="dashboard-title">학사관리시스템</div>
+            <button style={{ fontSize: '1.2em', background: '#e1bee7', color: '#2d3e50', border: 'none', borderRadius: 4, padding: '6px 14px', cursor: 'pointer', marginLeft: 8 }} onClick={e => {
+              // 메뉴 오픈 로직 필요시 추가
+            }}>☰ 메뉴</button>
+          </div>
+          <div className="dashboard-user">
+            <span>{user?.name || '이름없음'}({user?.studentId || '교번없음'})</span>
+            <button onClick={() => { localStorage.clear(); window.location.href = '/login'; }}>Logout</button>
+          </div>
+        </div>
+        <main style={{ maxWidth: 1000, margin: '32px auto', padding: '0 16px' }}>
+          <section style={{ background: '#fff', borderRadius: 12, marginBottom: 32, padding: 0, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #e0e0e0' }}>
+            <div style={{ borderBottom: '2px solid #bdbdbd', background: '#fafbfc', padding: '24px 32px 16px 32px', borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
+              <div style={{ fontWeight: 700, fontSize: 22, color: '#222', marginBottom: 6 }}>교수 대시보드</div>
+              <div style={{ color: '#666', fontSize: 16 }}>강의 공지사항 관리, 자료실 관리, 과제 관리, 학생 성적 관리 등 교수 전용 기능을 사용할 수 있습니다.</div>
+            </div>
+            <div style={{ padding: '32px 40px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <button style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 8, padding: '14px 0', fontWeight: 700, fontSize: 17, cursor: 'pointer', marginBottom: 8 }}>공지사항 관리</button>
+              <button style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 8, padding: '14px 0', fontWeight: 700, fontSize: 17, cursor: 'pointer', marginBottom: 8 }}>자료실 관리</button>
+              <button style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 8, padding: '14px 0', fontWeight: 700, fontSize: 17, cursor: 'pointer', marginBottom: 8 }}>과제 관리</button>
+              <button style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 8, padding: '14px 0', fontWeight: 700, fontSize: 17, cursor: 'pointer', marginBottom: 8 }}>학생 목록/성적 관리</button>
+            </div>
+          </section>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="dashboard-root">
       {/* 상단 유저 정보/로그아웃/메뉴 */}

@@ -3,9 +3,14 @@ import SideMenu from '../components/SideMenu';
 import '../pages/Dashboard.css';
 import { useNavigate } from 'react-router-dom';
 
-export default function MaterialRoom({ user, setUser }) {
+export default function MaterialRoom() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuPos, setMenuPos] = useState({ top: 60, left: 32 });
+  let user = null;
+  try {
+    const userStr = localStorage.getItem('user');
+    user = userStr && userStr !== 'undefined' ? JSON.parse(userStr) : null;
+  } catch (e) { user = null; }
   const [materials, setMaterials] = useState([
     { id: 1, title: '강의자료1.pdf', uploader: '김교수', date: '2024-06-01', file: null, fileName: '', viewCount: 17, content: '11-2 Reliability 강의자료입니다.' },
     { id: 2, title: '실습자료2.zip', uploader: '김교수', date: '2024-06-03', file: null, fileName: '', viewCount: 20, content: '실습자료입니다.' }
@@ -59,19 +64,19 @@ export default function MaterialRoom({ user, setUser }) {
   };
 
   return (
-    <div className="dashboard-root">
-      <div className="dashboard-header" style={{ borderRadius: 8, marginBottom: 24, position: 'sticky', top: 0, zIndex: 1000 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div className="dashboard-title">학사관리시스템</div>
-          <button style={{ fontSize: '1.2em', background: '#e1bee7', color: '#2d3e50', border: 'none', borderRadius: 4, padding: '6px 14px', cursor: 'pointer', marginLeft: 8 }} onClick={e => {
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #e3f0ff 0%, #fafbfc 100%)' }}>
+      <div className="dashboard-header" style={{ borderRadius: 12, marginBottom: 32, position: 'sticky', top: 0, zIndex: 1000, background: '#26334d', color: '#fff', boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div className="dashboard-title" style={{ fontSize: 28, fontWeight: 900, letterSpacing: 2, color: '#fff' }}>학사관리시스템</div>
+          <button style={{ fontSize: '1.2em', background: '#b39ddb', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 22px', cursor: 'pointer', marginLeft: 16, fontWeight: 700, boxShadow: '0 2px 8px rgba(100,100,200,0.08)' }} onClick={e => {
             const rect = e.target.getBoundingClientRect();
             setMenuPos({ top: rect.bottom + window.scrollY + 8, left: rect.left + window.scrollX });
             setMenuOpen(true);
           }}>☰ 메뉴</button>
         </div>
-        <div className="dashboard-user">
-          <span>{user?.name || '이름없음'}({user?.studentId || '학번없음'})</span>
-          <button onClick={() => { localStorage.clear(); window.location.href = '/login'; }}>Logout</button>
+        <div className="dashboard-user" style={{ fontWeight: 600, fontSize: 17 }}>
+          <span>{user?.name || '이름없음'}({user?.studentId || '교번없음'})</span>
+          <button onClick={() => { localStorage.clear(); window.location.href = '/login'; }} style={{ marginLeft: 18, background: '#fff', color: '#26334d', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 2px 8px rgba(100,100,200,0.08)' }}>Logout</button>
         </div>
       </div>
       {menuOpen && (

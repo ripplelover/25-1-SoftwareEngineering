@@ -21,32 +21,37 @@ export default function SideMenu({ setMenuOpen, menuPos, user }) {
   const [hoverProfIdx, setHoverProfIdx] = React.useState(-1);
   // 교수 전용 메뉴
   const professorMenus = [
+    { label: '대시보드', path: '/dashboard' },
     { label: '공지사항 관리', path: '/professor/notice' },
     { label: '자료실 관리', path: '/materials' },
     { label: '과제 관리', path: '/assignments' },
     { label: '학생 목록/성적 관리', path: '/grade-input' }
   ];
+  if (user?.role === 'professor') {
+    return (
+      <div style={{ position: 'absolute', top: menuPos.top, left: menuPos.left, background: '#fff', padding: 32, borderRadius: 12, minWidth: 320, maxWidth: '90vw', boxShadow: '0 2px 16px rgba(0,0,0,0.15)', zIndex: 2100 }} onClick={e => e.stopPropagation()}>
+        <h3 style={{ fontWeight: 900, fontSize: 22, marginBottom: 18, color: '#222' }}>교수 전용 관리</h3>
+        <ul style={{ listStyle: 'none', padding: 0, marginTop: 8, marginBottom: 18 }}>
+          {professorMenus.map((m, i) => (
+            <li
+              key={m.label}
+              style={hoverProfIdx === i ? { ...menuItemStyle, ...menuItemHover } : menuItemStyle}
+              onMouseEnter={() => setHoverProfIdx(i)}
+              onMouseLeave={() => setHoverProfIdx(-1)}
+              onClick={() => { navigate(m.path); setMenuOpen(false); }}
+            >
+              {m.label}
+            </li>
+          ))}
+        </ul>
+        <button onClick={() => setMenuOpen(false)} style={{ marginTop: 16, background: '#ececec', border: 'none', borderRadius: 6, padding: '8px 24px', fontWeight: 600, color: '#26334d', cursor: 'pointer' }}>닫기</button>
+      </div>
+    );
+  }
+  // 학생/일반 메뉴
   return (
     <div style={{ position: 'absolute', top: menuPos.top, left: menuPos.left, background: '#fff', padding: 32, borderRadius: 12, minWidth: 320, maxWidth: '90vw', boxShadow: '0 2px 16px rgba(0,0,0,0.15)', zIndex: 2100 }} onClick={e => e.stopPropagation()}>
       <h3 style={{ fontWeight: 900, fontSize: 22, marginBottom: 18, color: '#222' }}>기능 목록</h3>
-      {user?.role === 'professor' && (
-        <div style={{ marginBottom: 22 }}>
-          <b style={{ color: '#1976d2', fontSize: 17 }}>교수 전용 관리</b>
-          <ul style={{ listStyle: 'none', padding: 0, marginTop: 8 }}>
-            {professorMenus.map((m, i) => (
-              <li
-                key={m.label}
-                style={hoverProfIdx === i ? { ...menuItemStyle, ...menuItemHover } : menuItemStyle}
-                onMouseEnter={() => setHoverProfIdx(i)}
-                onMouseLeave={() => setHoverProfIdx(-1)}
-                onClick={() => { navigate(m.path); setMenuOpen(false); }}
-              >
-                {m.label}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
       <div style={{ marginBottom: 18 }}>
         <b>대학생활</b>
         <ul style={{ listStyle: 'none', padding: 0 }}>

@@ -24,4 +24,26 @@ router.post('/', async (req: Request, res: Response) => {
   }
 });
 
+// 과목 수정
+router.put('/:courseId', async (req: Request, res: Response) => {
+  try {
+    const course = await Course.findByIdAndUpdate(req.params.courseId, req.body, { new: true });
+    if (!course) return res.status(404).json({ message: '과목을 찾을 수 없음' });
+    res.json(course);
+  } catch (error) {
+    res.status(500).json({ message: '과목 수정 중 오류 발생' });
+  }
+});
+
+// 과목 삭제
+router.delete('/:courseId', async (req: Request, res: Response) => {
+  try {
+    const course = await Course.findByIdAndDelete(req.params.courseId);
+    if (!course) return res.status(404).json({ message: '과목을 찾을 수 없음' });
+    res.json({ message: '과목 삭제 완료' });
+  } catch (error) {
+    res.status(500).json({ message: '과목 삭제 중 오류 발생' });
+  }
+});
+
 export default router; 

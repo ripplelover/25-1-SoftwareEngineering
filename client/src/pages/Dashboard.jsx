@@ -12,8 +12,66 @@ export default function Dashboard() {
   const [menuPos, setMenuPos] = useState({ top: 60, left: 32 });
   const [activeSection, setActiveSection] = useState('dashboard');
 
+  // 더미 데이터 (KLAS 스타일)
+  const dummyCourses = [
+    {
+      _id: '1', name: '소프트웨어공학', professor: '홍길동', room: 'IT관 101', time: '월 1-2교시',
+      online: '남아있는 강의가 없습니다!',
+      assignment: '2개의 과제 중 1개가 10일 후 마감입니다.',
+      team: '남아있는 팀 프로젝트가 없습니다!'
+    },
+    {
+      _id: '2', name: '회로이론', professor: '이몽룡', room: 'IT관 102', time: '화 3-4교시',
+      online: '남아있는 강의가 없습니다!',
+      assignment: '남아있는 과제가 없습니다!',
+      team: '남아있는 팀 프로젝트가 없습니다!'
+    },
+    {
+      _id: '3', name: '산학협력캡스톤설계', professor: '성춘향', room: 'IT관 103', time: '수 5-6교시',
+      online: '남아있는 강의가 없습니다!',
+      assignment: '남아있는 과제가 없습니다!',
+      team: '남아있는 팀 프로젝트가 없습니다!'
+    },
+    {
+      _id: '4', name: '드로잉', professor: '임꺽정', room: 'IT관 104', time: '목 1-2교시',
+      online: '남아있는 강의가 없습니다!',
+      assignment: '남아있는 과제가 없습니다!',
+      team: '남아있는 팀 프로젝트가 없습니다!'
+    },
+    {
+      _id: '5', name: 'GPU컴퓨팅', professor: '최길동', room: 'IT관 105', time: '금 3-4교시',
+      online: '남아있는 강의가 없습니다!',
+      assignment: '남아있는 과제가 없습니다!',
+      team: '남아있는 팀 프로젝트가 없습니다!'
+    },
+  ];
+
+  // 시간표용 더미 데이터 (과목명, 교수명, 강의실, 시간)
+  const dummyTimetable = [
+    { day: '월', period: 1, name: '소프트웨어공학', professor: '홍길동', room: 'IT관 101', time: '1-2교시' },
+    { day: '화', period: 3, name: '회로이론', professor: '이몽룡', room: 'IT관 102', time: '3-4교시' },
+    { day: '수', period: 5, name: '산학협력캡스톤설계', professor: '성춘향', room: 'IT관 103', time: '5-6교시' },
+    { day: '목', period: 1, name: '드로잉', professor: '임꺽정', room: 'IT관 104', time: '1-2교시' },
+    { day: '금', period: 3, name: 'GPU컴퓨팅', professor: '최길동', room: 'IT관 105', time: '3-4교시' },
+  ];
+
+  // 과목명별 색상 매핑
+  const courseColors = {
+    '소프트웨어공학': '#b39ddb',
+    '회로이론': '#ffe082',
+    '산학협력캡스톤설계': '#80cbc4',
+    '드로잉': '#ce93d8',
+    'GPU컴퓨팅': '#90caf9',
+  };
+
   useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+    let userData = {};
+    try {
+      const userStr = localStorage.getItem('user');
+      userData = userStr && userStr !== 'undefined' ? JSON.parse(userStr) : {};
+    } catch (e) {
+      userData = {};
+    }
     setUser(userData);
     if (!userData.id) return;
     fetch(`http://localhost:5000/api/courses/${userData.id}`)
@@ -42,14 +100,30 @@ export default function Dashboard() {
     if (courses.length > 0) fetchAssignmentsAndNotices();
   }, [courses]);
 
-  // 시간표 2차원 배열 만들기 (요일 x 교시)
+  // 시간표 2차원 배열 만들기 (요일 x 교시, 여러 교시 반영)
   const days = ['월', '화', '수', '목', '금'];
   const periods = [1, 2, 3, 4, 5, 6, 7];
-  const timetableMatrix = Array.from({ length: periods.length }, () => Array(days.length).fill('-'));
-  timetable.forEach(entry => {
+  const timetableData = timetable.length > 0 ? timetable : dummyTimetable;
+  const timetableMatrix = Array.from({ length: periods.length }, () => Array(days.length).fill(null));
+  const timetableDisplayMatrix = Array.from({ length: periods.length }, () => Array(days.length).fill(null));
+  timetableData.forEach(entry => {
     const dayIdx = days.indexOf(entry.day);
-    if (dayIdx !== -1 && entry.period >= 1 && entry.period <= periods.length) {
-      timetableMatrix[entry.period - 1][dayIdx] = entry.course?.name || '-';
+    if (dayIdx !== -1 && entry.time) {
+      const match = entry.time.match(/(\d+)-(\d+)교시/);
+      let start = entry.period;
+      let end = entry.period;
+      if (match) {
+        start = parseInt(match[1], 10);
+        end = parseInt(match[2], 10);
+      } else if (typeof entry.period === 'number') {
+        start = end = entry.period;
+      }
+      for (let p = start; p <= end; p++) {
+        if (p >= 1 && p <= periods.length) {
+          timetableMatrix[p - 1][dayIdx] = entry;
+          timetableDisplayMatrix[p - 1][dayIdx] = (p === start);
+        }
+      }
     }
   });
 
@@ -117,28 +191,28 @@ export default function Dashboard() {
           <>
             <section className="courses">
               <h2>수강 과목 현황</h2>
-              <table>
-                <thead>
-                  <tr>
-                    <th>과목명</th><th>교수명</th><th>강의실</th><th>시간</th>
-                    <th>공지사항</th><th>강의자료실</th><th>Q&A</th><th>학습독독</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {courses.map(c => (
-                    <tr key={c._id}>
-                      <td>{c.name}</td>
-                      <td>{c.professor}</td>
-                      <td>{c.room}</td>
-                      <td>{c.time}</td>
-                      <td><button>공지사항</button></td>
-                      <td><button>강의자료실</button></td>
-                      <td><button>Q&A</button></td>
-                      <td><button>학습독독</button></td>
+              <div style={{ background: '#fff', borderRadius: 8, padding: 16, border: '1px solid #e0e0e0' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #e0e0e0' }}>
+                      <th style={{ textAlign: 'left', padding: '8px 12px' }}>과목명</th>
+                      <th style={{ textAlign: 'left', padding: '8px 12px' }}>온라인 강의</th>
+                      <th style={{ textAlign: 'left', padding: '8px 12px' }}>과제</th>
+                      <th style={{ textAlign: 'left', padding: '8px 12px' }}>팀 프로젝트</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {(courses.length > 0 ? courses : dummyCourses).map(c => (
+                      <tr key={c._id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                        <td style={{ padding: '8px 12px', fontWeight: 500 }}>{c.name}</td>
+                        <td style={{ padding: '8px 12px', color: '#2e7d32' }}>{c.online}</td>
+                        <td style={{ padding: '8px 12px', color: c.assignment.includes('마감') ? '#d84315' : '#2e7d32' }}>{c.assignment}</td>
+                        <td style={{ padding: '8px 12px', color: '#2e7d32' }}>{c.team}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </section>
             <section className="timetable">
               <h2>시간표</h2>
@@ -153,7 +227,27 @@ export default function Dashboard() {
                   {periods.map((period, i) => (
                     <tr key={period}>
                       <td>{period}교시</td>
-                      {days.map((day, j) => <td key={day}>{timetableMatrix[i][j]}</td>)}
+                      {days.map((day, j) => {
+                        const cell = timetableMatrix[i][j];
+                        const show = timetableDisplayMatrix[i][j];
+                        return (
+                          <td key={day} style={{
+                            minWidth: 120, fontSize: '0.95em', lineHeight: 1.4,
+                            background: cell ? courseColors[cell.name] || '#f5f5f5' : undefined,
+                            color: cell ? (['#ffe082'].includes(courseColors[cell.name]) ? '#333' : '#222') : undefined,
+                            fontWeight: cell ? 500 : undefined
+                          }}>
+                            {cell && show ? (
+                              <>
+                                <b>{cell.name}</b><br />
+                                <span style={{ color: '#666' }}>{cell.professor}</span><br />
+                                <span style={{ color: '#888' }}>{cell.room}</span><br />
+                                <span style={{ color: '#222' }}>{cell.time}</span>
+                              </>
+                            ) : ''}
+                          </td>
+                        );
+                      })}
                     </tr>
                   ))}
                 </tbody>

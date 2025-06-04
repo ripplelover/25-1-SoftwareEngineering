@@ -1,0 +1,40 @@
+# Node
+node_modules/
+.env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+/dist
+/build
+
+# OS
+.DS_Store
+Thumbs.db
+
+# VSCode
+.vscode/
+
+# React
+*.log
+*.cache
+
+# Test
+coverage/
+
+# Others
+*.local
+*.env.*
+.env.*
+
+# Mac
+*.DS_Store
+
+# Windows
+*.log
+*.tmp
+*.swp
+
+# TypeScript
+*.tsbuildinfo 

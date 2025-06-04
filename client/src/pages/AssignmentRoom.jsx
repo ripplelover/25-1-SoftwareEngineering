@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import SideMenu from '../components/SideMenu';
 import '../pages/Dashboard.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 
 export default function AssignmentRoom() {
@@ -26,7 +26,10 @@ export default function AssignmentRoom() {
   const [newContent, setNewContent] = useState('');
   const [newCourse, setNewCourse] = useState('');
   const [professorCourses, setProfessorCourses] = useState([]);
+  const [studentCourses, setStudentCourses] = useState([]);
+  const [selectedCourse, setSelectedCourse] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
 
   // 과제 목록 조회
   useEffect(() => {
@@ -62,6 +65,31 @@ export default function AssignmentRoom() {
       fetchCourses();
     }
   }, [user]);
+
+  // 학생 수강 과목 목록 불러오기
+  useEffect(() => {
+    if (user?.role === 'student') {
+      const fetchCourses = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const res = await axios.get(`http://localhost:5000/api/courses/student/${user._id}`, {
+            headers: { 'x-auth-token': token }
+          });
+          setStudentCourses(res.data);
+        } catch (err) {
+          setStudentCourses([]);
+        }
+      };
+      fetchCourses();
+    }
+  }, [user]);
+
+  // 쿼리스트링에서 course 파라미터가 있으면 자동 선택
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const courseId = params.get('course');
+    if (courseId) setSelectedCourse(courseId);
+  }, [location.search]);
 
   // 파일 업로드
   const handleFileUpload = async (file) => {
@@ -200,6 +228,11 @@ export default function AssignmentRoom() {
     }
   };
 
+  // 과제 목록 필터링
+  const filteredAssignments = user?.role === 'student' && selectedCourse
+    ? assignments.filter(a => a.course?._id === selectedCourse)
+    : assignments;
+
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #e3f0ff 0%, #fafbfc 100%)' }}>
       <div className="dashboard-header" style={{ borderRadius: 12, marginBottom: 32, position: 'sticky', top: 0, zIndex: 1000, background: '#26334d', color: '#fff', boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
@@ -241,10 +274,19 @@ export default function AssignmentRoom() {
                 <button onClick={handleAdd} style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 24px', fontWeight: 600, cursor: 'pointer' }}>등록</button>
               </div>
             )}
+            {user?.role === 'student' && (
+              <div style={{ marginBottom: 24, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+                <select value={selectedCourse} onChange={e => setSelectedCourse(e.target.value)} style={{ padding: '8px', borderRadius: 4, border: '1px solid #ccc', minWidth: 160, marginRight: 12 }}>
+                  <option value=''>전체 과목</option>
+                  {studentCourses.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+                </select>
+              </div>
+            )}
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 16, background: '#fff' }}>
               <thead>
                 <tr style={{ background: '#f5e6fa' }}>
                   <th>번호</th>
+                  <th>과목명</th>
                   <th>제목</th>
                   <th>마감일</th>
                   <th>파일</th>
@@ -253,17 +295,33 @@ export default function AssignmentRoom() {
                 </tr>
               </thead>
               <tbody>
-                {assignments.map((a, idx) => (
+                {filteredAssignments.map((a, idx) => (
                   <tr key={a._id}>
-                    <td style={{ padding: '12px 8px' }}>{assignments.length - idx}</td>
-                    <td style={{ padding: '12px 8px', color: '#1976d2', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => navigate(`/assignments/${a._id}`)}>{a.title}</td>
-                    <td style={{ padding: '12px 8px' }}>{new Date(a.dueDate).toLocaleDateString()}</td>
-                    <td style={{ padding: '12px 8px' }}>{a.fileName ? a.fileName : '파일 없음'}</td>
+                    <td style={{ padding: '12px 8px' }}>{filteredAssignments.length - idx}</td>
+                    <td style={{ padding: '12px 8px' }}>{a.course?.name || '-'}</td>
+                    <td style={{ padding: '12px 8px', color: '#1976d2', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => navigate(`/assignments/${a._id}`)}>{editId === a._id ? (
+                      <input value={editTitle} onChange={e => setEditTitle(e.target.value)} style={{ width: 120 }} />
+                    ) : a.title}</td>
+                    <td style={{ padding: '12px 8px' }}>{editId === a._id ? (
+                      <input type="date" value={editDue} onChange={e => setEditDue(e.target.value)} style={{ width: 120 }} />
+                    ) : (a.dueDate ? new Date(a.dueDate).toLocaleDateString() : '-')}</td>
+                    <td style={{ padding: '12px 8px' }}>{a.fileUrl ? (
+                      <a href={`http://localhost:5000/api/assignments/download/${encodeURIComponent(a.savedFileName || (a.fileUrl && a.fileUrl.split('/').pop()))}`} download={a.fileName}>{a.fileName}</a>
+                    ) : '파일 없음'}</td>
                     {user?.role === 'professor' && (
                       <td style={{ padding: '12px 8px' }}>
-                        <button onClick={() => handleEdit(a._id)} style={{ marginRight: 8 }}>수정</button>
-                        <button onClick={() => handleDelete(a._id)} style={{ color: 'red', marginRight: 8 }}>삭제</button>
-                        <button onClick={() => handleShowSubmissions(a._id, a.title)} style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 4, padding: '4px 12px', fontWeight: 500, cursor: 'pointer' }}>제출 현황</button>
+                        {editId === a._id ? (
+                          <>
+                            <button onClick={() => handleEditSave(a._id)} style={{ marginRight: 8 }}>저장</button>
+                            <button onClick={() => setEditId(null)}>취소</button>
+                          </>
+                        ) : (
+                          <>
+                            <button onClick={() => handleEdit(a._id)} style={{ marginRight: 8 }}>수정</button>
+                            <button onClick={() => handleDelete(a._id)} style={{ color: 'red', marginRight: 8 }}>삭제</button>
+                            <button onClick={() => handleShowSubmissions(a._id, a.title)} style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 4, padding: '4px 12px', fontWeight: 500, cursor: 'pointer' }}>제출 현황</button>
+                          </>
+                        )}
                       </td>
                     )}
                     {user?.role === 'student' && (
@@ -273,8 +331,8 @@ export default function AssignmentRoom() {
                     )}
                   </tr>
                 ))}
-                {assignments.length === 0 && (
-                  <tr><td colSpan={user?.role === 'professor' ? 5 : 5} style={{ textAlign: 'center', color: '#aaa', padding: 32 }}>과제가 없습니다.</td></tr>
+                {filteredAssignments.length === 0 && (
+                  <tr><td colSpan={user?.role === 'professor' ? 6 : 6} style={{ textAlign: 'center', color: '#aaa', padding: 32 }}>과제가 없습니다.</td></tr>
                 )}
               </tbody>
             </table>

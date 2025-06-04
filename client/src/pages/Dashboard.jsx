@@ -109,6 +109,51 @@ export default function Dashboard({ user, setUser }) {
     */
   }, [courses]);
 
+  // 과제 목록 불러오기
+  useEffect(() => {
+    const fetchAssignments = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get('http://localhost:5000/api/assignments', {
+          headers: { 'x-auth-token': token }
+        });
+        setAssignments(res.data);
+      } catch (err) {
+        setAssignments([]);
+      }
+    };
+    if (user && user._id) fetchAssignments();
+  }, [user]);
+
+  // 공지사항 목록 불러오기
+  useEffect(() => {
+    const fetchNotices = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get('http://localhost:5000/api/notices', {
+          headers: { 'x-auth-token': token }
+        });
+        setNotices(res.data);
+      } catch (err) {
+        setNotices([]);
+      }
+    };
+    if (user && user._id) fetchNotices();
+  }, [user]);
+
+  // 수강과목 현황 테이블에서 과제 상태 계산
+  const getAssignmentStatus = (courseId) => {
+    const courseAssignments = assignments.filter(a => a.course?._id === courseId);
+    if (courseAssignments.length === 0) return <span style={{ color: '#388e3c' }}>남아있는 과제가 없습니다!</span>;
+    const now = new Date();
+    const dueAssignments = courseAssignments.filter(a => new Date(a.dueDate) > now);
+    if (dueAssignments.length === 0) return <span style={{ color: '#388e3c' }}>남아있는 과제가 없습니다!</span>;
+    const soonest = dueAssignments.reduce((min, a) => new Date(a.dueDate) < new Date(min.dueDate) ? a : min, dueAssignments[0]);
+    const daysLeft = Math.ceil((new Date(soonest.dueDate) - now) / (1000*60*60*24));
+    const text = `${courseAssignments.length}개의 과제 중 ${dueAssignments.length}개가 ${daysLeft}일 후 마감입니다.`;
+    return <span style={{ color: daysLeft <= 1 ? '#d32f2f' : '#222' }}>{text}</span>;
+  };
+
   // 시간표 2차원 배열 만들기 (요일 x 교시, 여러 교시 반영)
   const days = ['월', '화', '수', '목', '금'];
   const periods = [1, 2, 3, 4, 5, 6, 7];
@@ -231,8 +276,10 @@ export default function Dashboard({ user, setUser }) {
                         <td style={{ padding: '8px 12px', color: '#2e7d32' }}>
                           {c.online ? c.online : '남아있는 강의가 없습니다!'}
                         </td>
-                        <td style={{ padding: '8px 12px', color: '#2e7d32' }}>
-                          {c.assignment ? c.assignment : '남아있는 과제가 없습니다!'}
+                        <td style={{ padding: '8px 12px', color: '#2e7d32', cursor: 'pointer' }}
+                          onClick={() => navigate(`/assignments?course=${c._id}`)}
+                        >
+                          {getAssignmentStatus(c._id)}
                         </td>
                         <td style={{ padding: '8px 12px', color: '#2e7d32' }}>
                           {c.team ? c.team : '남아있는 팀 프로젝트가 없습니다!'}
@@ -351,7 +398,7 @@ export default function Dashboard({ user, setUser }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {dummyNotices.filter(n => courses.some(c => c.name === n.course)).map((n, idx) => (
+                    {notices.filter(n => courses.some(c => c.name === n.course)).map((n, idx) => (
                       <tr key={n.id} style={{ borderBottom: '1px solid #f0f0f0', background: idx % 2 === 0 ? '#fafbfc' : '#fff' }}>
                         <td style={{ color: '#888', padding: '8px 8px', whiteSpace: 'nowrap' }}>{n.date}</td>
                         <td style={{ color: '#5e35b1', fontWeight: 500, padding: '8px 8px', whiteSpace: 'nowrap' }}>{n.type}</td>
@@ -402,7 +449,7 @@ export default function Dashboard({ user, setUser }) {
                 <h2>과목별 공지사항</h2>
                 <ul>
                   {notices.map((n, i) => (
-                    <li key={i}>[{n.course}] {n.title} ({new Date(n.dueDate).toLocaleDateString()})</li>
+                    <li key={i}>[{n.course?.name || n.course}] {n.title} ({n.dueDate ? new Date(n.dueDate).toLocaleDateString() : ''})</li>
                   ))}
                   {notices.length === 0 && <li>공지사항이 없습니다.</li>}
                 </ul>
@@ -411,7 +458,7 @@ export default function Dashboard({ user, setUser }) {
                 <h2>과제 현황</h2>
                 <ul>
                   {assignments.map((a, i) => (
-                    <li key={i}>[{a.course}] {a.title} (마감: {new Date(a.dueDate).toLocaleDateString()})</li>
+                    <li key={i}>[{a.course?.name}] {a.title} (마감: {new Date(a.dueDate).toLocaleDateString()})</li>
                   ))}
                   {assignments.length === 0 && <li>진행 중인 과제가 없습니다.</li>}
                 </ul>

@@ -32,8 +32,8 @@ router.get('/', auth, async (req, res) => {
       filter.professor = req.user._id;
     } else if (req.user.role === 'student') {
       // 학생: 본인이 수강 중인 과목만
-      // Course에서 user가 본인인 과목 id만 추출
-      const courses = await Course.find({ user: req.user._id });
+      // Course에서 students에 본인 id가 포함된 과목 id만 추출
+      const courses = await Course.find({ students: req.user._id });
       filter.course = { $in: courses.map(c => c._id) };
     }
     const notices = await Notice.find(filter).populate('course').populate('professor').sort({ createdAt: -1 });

@@ -17,6 +17,9 @@ export interface IAssignment extends Document {
   dueDate: Date;
   type: 'assignment' | 'notice';
   submissions: ISubmission[];
+  fileUrl?: string;
+  fileName?: string;
+  savedFileName?: string;
 }
 
 const submissionSchema = new Schema<ISubmission>({
@@ -35,7 +38,10 @@ const assignmentSchema = new Schema<IAssignment>({
   content: { type: String, required: true },
   dueDate: { type: Date, required: true },
   type: { type: String, enum: ['assignment', 'notice'], required: true },
-  submissions: [submissionSchema]
+  submissions: [submissionSchema],
+  fileUrl: { type: String },
+  fileName: { type: String },
+  savedFileName: { type: String }
 });
 
 export const Assignment = mongoose.model<IAssignment>('Assignment', assignmentSchema); 

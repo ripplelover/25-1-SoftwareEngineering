@@ -1,0 +1,94 @@
+최근 RL 연구·프레임워크에서 검증된 기법 중에서, 귀하의 DQN 코드에 적용해 보면 좋을 만한 주요 아이디어를 정리해 드립니다.
+
+---
+
+## 1. Double DQN
+
+* **문제점**: 일반 DQN은 Q-값 과대추정을 유발
+* **해결책**:
+
+  ```python
+  # 기존 target = r + γ * max_a′ Q_target(s′, a′)
+  # → Double DQN:
+  a_max = np.argmax(self.model(s_next), axis=1)
+  target_q = self.target_model(s_next)[range(batch), a_max]
+  target = r + γ * target_q
+  ```
+
+  이렇게 하면 “행동 선택은 온라인 네트워크가, 평가는 타깃 네트워크가” 맡도록 분리해 과도한 Q 추정을 줄일 수 있습니다.
+
+---
+
+## 2. Dueling 네트워크 구조
+
+* **아이디어**: Value 와 Advantage 스트림을 분리
+* **효과**:
+
+  * “어떤 상태가 좋은지”와 “어떤 행동이 좋은지”를 독립적으로 학습
+  * 상태 가치 학습이 더 안정적
+* **구현 예시** (Keras)
+
+  ```python
+  # shared encoder
+  x = Dense(128, activation='relu')(state)
+  # value 스트림
+  v = Dense(1, name='value')(x)
+  # advantage 스트림
+  a = Dense(self.total_actions, name='advantage')(x)
+  # combine
+  q = Add(name='q_all')([
+      v, Subtract()([a, Mean(axis=1, keepdims=True)(a)])
+  ])
+  ```
+
+---
+
+## 3. Prioritized Experience Replay
+
+* **일반 리플레이**: 무작위 샘플링 → 중요 경험(큰 TD-error)이 섞여도 잘 반영 안 됨
+* **우선순위 큐**: TD-error 크기에 비례해 샘플링 확률 부여
+* **효과**: 빠른 에러 수렴, 샘플 효율 향상
+* **라이브러리**: `SumTree` 구조 직접 구현하거나, `ReplayBuffer` 패키지 사용
+
+---
+
+## 4. n-step Returns (멀티스텝 부트스트랩)
+
+* **아이디어**: 보상을 한 스텝이 아니라 n스텝 동안 누적
+* **공식**:
+
+  $$
+    G_t^{(n)} = \sum_{k=0}^{n-1} \gamma^k r_{t+k} + \gamma^n \max_a Q(s_{t+n}, a)
+  $$
+* **장점**: 더 긴 보상 정보를 한 번에 학습해, 단기 노이즈 완화 및 빠른 전파
+
+---
+
+## 5. Exploration 개선: NoisyNet / Parameter Noise
+
+* **ε-greedy 한계**: 고정 스케줄 뒤 “완전 활용” 되면 탐색 중단
+* **NoisyNet**: 네트워크 가중치에 학습 가능한 노이즈 추가
+* **효과**: 상태마다 적응적인 탐색 강도, ε 스케줄 불필요
+
+---
+
+## 6. 기타 모범 사례
+
+* **타깃 네트워크 주기적 업데이트**: 매 K 스텝마다 전체 가중치 복사
+* **Huber Loss**: MSE보다 급격한 오차 변화에 덜 민감
+* **Gradient Clipping**: `optimizer.clipnorm`/`clipvalue` 옵션 사용
+* **BatchNorm, LayerNorm**: 안정적인 학습 보조
+* **학습률 스케줄링**: warm-up → cosine decay 등
+
+---
+
+### 마무리 및 적용 순서 제안
+
+1. **Double DQN + target update 주기 조정**
+2. **Dueling 구조 도입**
+3. **Prioritized Replay**
+4. **n-step Returns**
+5. **NoisyNet**
+6. **손실 함수·최적화 기법(Huber, clipping, lr 스케줄링) 정교화**
+
+이 순서대로 하나씩 단계적으로 도입해 보시면, 학습 안정성과 샘플 효율이 눈에 띄게 향상될 겁니다.

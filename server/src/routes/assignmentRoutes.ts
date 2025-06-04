@@ -154,4 +154,12 @@ router.get('/download/:filename', (req: Request, res: Response) => {
   });
 });
 
+// 과제 업로드 라우트 (학생만)
+router.post('/:id', auth, async (req: AuthRequest, res: Response) => {
+  if (req.user?.role !== 'student') {
+    return res.status(403).json({ message: '권한이 없습니다.' });
+  }
+});
+
+
 export default router; 

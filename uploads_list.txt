@@ -1,0 +1,11 @@
+﻿
+
+    디렉터리: D:\SoftwareEngineering2\server\uploads
+
+
+Mode                 LastWriteTime         Length Name                                                  
+----                 -------------         ------ ----                                                  
+-a----        2025-06-04   오후 4:04        7626817 1749020685388-126598029-1_ê¹ëê·_ê¹ì°¬ì§_ìì í
+                                                  .pdf                                                 
+
+
